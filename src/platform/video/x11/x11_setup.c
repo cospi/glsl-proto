@@ -1,0 +1,55 @@
+#include "x11_setup.h"
+
+#include <assert.h>
+
+bool x11_setup_init(X11Setup *_this, Logger *logger, unsigned int width, unsigned int height, const char *title)
+{
+	assert(_this != NULL);
+	assert(logger != NULL);
+	assert(width > 0);
+	assert(height > 0);
+	assert(title != NULL);
+
+	X11Connection *connection;
+	X11GlWindow *window;
+	X11GlContext *gl_context;
+
+	connection = &_this->connection;
+	if (!x11_connection_init(connection, logger, NULL)) {
+		return false;
+	}
+
+	window = &_this->window;
+	if (!x11_gl_window_init(window, logger, connection, 640, 480, "GLSL Prototyper")) {
+		goto error_connection_fini;
+	}
+
+	gl_context = &_this->gl_context;
+	if (!x11_gl_context_init(gl_context, logger, window)) {
+		goto error_window_fini;
+	}
+
+	if (!x11_gl_context_current_init(&_this->gl_context_current, logger, gl_context)) {
+		goto error_gl_context_fini;
+	}
+
+	return true;
+
+error_gl_context_fini:
+	x11_gl_context_fini(gl_context);
+error_window_fini:
+	x11_gl_window_fini(window);
+error_connection_fini:
+	x11_connection_fini(connection);
+	return false;
+}
+
+void x11_setup_fini(const X11Setup *_this)
+{
+	assert(_this != NULL);
+
+	x11_gl_context_current_fini(&_this->gl_context_current);
+	x11_gl_context_fini(&_this->gl_context);
+	x11_gl_window_fini(&_this->window);
+	x11_connection_fini(&_this->connection);
+}

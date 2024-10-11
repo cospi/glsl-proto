@@ -3,8 +3,7 @@
 #include <stdlib.h>
 
 #include "../../log/stdlib/stdlib_logger.h"
-#include "../../video/x11/x11_connection.h"
-#include "../../video/x11/x11_gl_context_current.h"
+#include "../../video/x11/x11_setup.h"
 
 static bool handle_events(const X11Connection *connection)
 {
@@ -23,32 +22,16 @@ static bool handle_events(const X11Connection *connection)
 
 int main(void)
 {
-	int exit_status = EXIT_FAILURE;
 	StdlibLogger logger;
-	X11Connection x11_connection;
-	X11GlWindow window;
-	X11GlContext gl_context;
-	X11GlContextCurrent gl_context_current;
+	X11Setup x11_setup;
 
 	stdlib_logger_init(&logger, stdout, stderr, stderr);
 
-	if (!x11_connection_init(&x11_connection, &logger.base, NULL)) {
-		return exit_status;
+	if (!x11_setup_init(&x11_setup, &logger.base, 640, 480, "GLSL Prototyper")) {
+		return EXIT_FAILURE;
 	}
 
-	if (!x11_gl_window_init(&window, &logger.base, &x11_connection, 640, 480, "GLSL Prototyper")) {
-		goto out_x11_connection_fini;
-	}
-
-	if (!x11_gl_context_init(&gl_context, &logger.base, &window)) {
-		goto out_x11_gl_window_fini;
-	}
-
-	if (!x11_gl_context_current_init(&gl_context_current, &logger.base, &gl_context)) {
-		goto out_x11_gl_context_fini;
-	}
-
-	while (handle_events(&x11_connection)) {
+	while (handle_events(&x11_setup.connection)) {
 		glClear(GL_COLOR_BUFFER_BIT);
 		glBegin(GL_TRIANGLES);
 		glColor3f(1.0f, 0.0f, 0.0f);
@@ -58,16 +41,9 @@ int main(void)
 		glColor3f(0.0f, 0.0f, 1.0f);
 		glVertex2f(0.0f, 0.5f);
 		glEnd();
-		x11_gl_window_swap_buffers(&window);
+		x11_gl_window_swap_buffers(&x11_setup.window);
 	}
 
-	exit_status = EXIT_SUCCESS;
-	x11_gl_context_current_fini(&gl_context_current);
-out_x11_gl_context_fini:
-	x11_gl_context_fini(&gl_context);
-out_x11_gl_window_fini:
-	x11_gl_window_fini(&window);
-out_x11_connection_fini:
-	x11_connection_fini(&x11_connection);
-	return exit_status;
+	x11_setup_fini(&x11_setup);
+	return EXIT_SUCCESS;
 }
