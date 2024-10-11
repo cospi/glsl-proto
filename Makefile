@@ -145,7 +145,7 @@ else
 	CFLAGS += -DNDEBUG -O3
 endif
 
-LDFLAGS += -lX11
+LDFLAGS += -lX11 -lGL
 
 TARGET_OBJ_TO_DEP = $(@:$(OBJ_DIR)%$(OBJ_EXT)=$(DEP_DIR)%$(DEP_EXT))
 
