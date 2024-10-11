@@ -145,6 +145,8 @@ else
 	CFLAGS += -DNDEBUG -O3
 endif
 
+LDFLAGS += -lX11
+
 TARGET_OBJ_TO_DEP = $(@:$(OBJ_DIR)%$(OBJ_EXT)=$(DEP_DIR)%$(DEP_EXT))
 
 all : $(OUT)
@@ -154,7 +156,7 @@ clean :
 
 $(OUT) : $(OBJ)
 	$(shell mkdir -p $(dir $@))
-	$(CC) $^ -o $@
+	$(CC) $^ -o $@ $(LDFLAGS)
 
 $(OBJ_DIR)%$(OBJ_EXT) : $(SRC_DIR)%$(SRC_EXT)
 	$(shell mkdir -p $(dir $@) $(dir $(TARGET_OBJ_TO_DEP)))
