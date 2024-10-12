@@ -44,9 +44,12 @@ void proto_fini(const Proto *_this)
 	}
 }
 
-void proto_tick(const Proto *_this)
+void proto_tick(const Proto *_this, float delta_time_sec)
 {
 	assert(_this != NULL);
+
+	Logger *logger = _this->platform->logger;
+	logger->log(logger, LOG_LEVEL_INFO, "%f", (double)delta_time_sec);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	if (_this->program_initialized && _this->mesh_initialized) {

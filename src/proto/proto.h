@@ -17,6 +17,6 @@ typedef struct Proto {
 
 void proto_init(Proto *_this, const Platform *platform);
 void proto_fini(const Proto *_this);
-void proto_tick(const Proto *_this);
+void proto_tick(const Proto *_this, float delta_time_sec);
 
 #endif // PROTO_PROTO_H_
