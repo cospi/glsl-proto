@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include "../math/matrix4.h"
+
 void proto_init(Proto *_this, const Platform *platform)
 {
 	assert(_this != NULL);
@@ -21,11 +23,14 @@ void proto_init(Proto *_this, const Platform *platform)
 		"res/shaders/test.vert",
 		"res/shaders/test.frag"
 	);
+	if (_this->program_initialized) {
+		_this->projection_uniform_location = gl_program_get_uniform_location(&_this->program, "u_projection");
+	}
 
 	Vertex2 vertices[] = {
-		(Vertex2) { (Vector2) { -0.5f, -0.5f }, (Color) { 1.0f, 0.0f, 0.0f, 1.0f } },
-		(Vertex2) { (Vector2) { 0.5f, -0.5f }, (Color) { 0.0f, 1.0f, 0.0f, 1.0f } },
-		(Vertex2) { (Vector2) { 0.0f, 0.5f }, (Color) { 0.0f, 0.0f, 1.0f, 1.0f } }
+		(Vertex2) { (Vector2) { 160.0f, 120.0f }, (Color) { 1.0f, 0.0f, 0.0f, 1.0f } },
+		(Vertex2) { (Vector2) { 480.0f, 120.0f }, (Color) { 0.0f, 1.0f, 0.0f, 1.0f } },
+		(Vertex2) { (Vector2) { 320.0f, 360.0f }, (Color) { 0.0f, 0.0f, 1.0f, 1.0f } }
 	};
 	uint16_t indices[] = { 0, 1, 2 };
 	_this->mesh_initialized = gl_mesh_init(&_this->mesh, logger, vertices, 3, indices, 3);
@@ -52,12 +57,22 @@ void proto_tick(const Proto *_this, float delta_time_sec)
 	logger->log(logger, LOG_LEVEL_INFO, "%f", (double)delta_time_sec);
 
 	const Platform *platform = _this->platform;
-	glViewport(0, 0, (GLint)platform->window_width, (GLint)platform->window_height);
+	unsigned int width = platform->window_width;
+	unsigned int height = platform->window_height;
+	glViewport(0, 0, (GLint)width, (GLint)height);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	if (_this->program_initialized && _this->mesh_initialized) {
 		gl_program_use(&_this->program);
+
+		int32_t projection_uniform_location = _this->projection_uniform_location;
+		if (projection_uniform_location != -1) {
+			Matrix4 projection;
+			matrix4_ortho(projection, 0.0f, (float)width, 0.0f, (float)height, 0.0f, -1000.0f);
+			glUniformMatrix4fv(projection_uniform_location, 1, GL_TRUE, projection);
+		}
+
 		gl_mesh_render(&_this->mesh);
 	}
 }

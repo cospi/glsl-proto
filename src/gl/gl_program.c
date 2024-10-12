@@ -151,3 +151,17 @@ void gl_program_use(const GlProgram *_this)
 
 	glUseProgram(_this->program);
 }
+
+int32_t gl_program_get_uniform_location(const GlProgram *_this, const char *uniform_name)
+{
+	assert(_this != NULL);
+	assert(uniform_name != NULL);
+
+	int32_t uniform_location = glGetUniformLocation(_this->program, uniform_name);
+	if (uniform_location == -1) {
+		Logger *logger = _this->logger;
+		logger->log(logger, LOG_LEVEL_ERROR, "Getting uniform location for \"%s\" failed.", uniform_name);
+	}
+
+	return uniform_location;
+}

@@ -31,6 +31,9 @@ extern PFNGLUSEPROGRAMPROC glUseProgram;
 extern PFNGLGETPROGRAMIVPROC glGetProgramiv;
 extern PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
 
+extern PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+extern PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
+
 void gl_clear_errors(void);
 
 #endif // GL_GL_H_

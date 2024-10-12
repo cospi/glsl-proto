@@ -28,6 +28,9 @@ PFNGLUSEPROGRAMPROC glUseProgram;
 PFNGLGETPROGRAMIVPROC glGetProgramiv;
 PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
 
+PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
+
 void gl_clear_errors(void)
 {
 	while (glGetError() != GL_NO_ERROR) {

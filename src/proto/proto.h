@@ -10,6 +10,7 @@ typedef struct Proto {
 
 	GlProgram program;
 	bool program_initialized;
+	int32_t projection_uniform_location;
 
 	GlMesh mesh;
 	bool mesh_initialized;

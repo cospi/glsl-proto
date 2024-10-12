@@ -79,6 +79,9 @@ bool x11_gl_init_extensions(Logger *logger)
 	INIT_PROC(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog);
 	INIT_PROC(PFNGLUSEPROGRAMPROC, glUseProgram);
 
+	INIT_PROC(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation);
+	INIT_PROC(PFNGLUNIFORMMATRIX4FVPROC, glUniformMatrix4fv);
+
 	#undef INIT_PROC
 
 	return true;
