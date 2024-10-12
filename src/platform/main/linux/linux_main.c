@@ -6,6 +6,7 @@
 #include "../../video/x11/x11_setup.h"
 #include "../../../gl/gl_mesh.h"
 #include "../../../gl/gl_program.h"
+#include "../../../proto/proto.h"
 
 static bool handle_events(const X11Connection *connection)
 {
@@ -24,55 +25,34 @@ static bool handle_events(const X11Connection *connection)
 
 int main(void)
 {
-	int exit_status = EXIT_FAILURE;
 	StdlibLogger logger;
-	StdlibFileSystem file_system;
-	StdlibAllocator allocator;
-	X11Setup x11_setup;
-	GlProgram program;
-	GlMesh mesh;
-	Vertex2 vertices[] = {
-		(Vertex2) { (Vector2) { -0.5f, -0.5f }, (Color) { 1.0f, 0.0f, 0.0f, 1.0f } },
-		(Vertex2) { (Vector2) { 0.5f, -0.5f }, (Color) { 0.0f, 1.0f, 0.0f, 1.0f } },
-		(Vertex2) { (Vector2) { 0.0f, 0.5f }, (Color) { 0.0f, 0.0f, 1.0f, 1.0f } }
-	};
-	uint16_t indices[] = { 0, 1, 2 };
-
 	stdlib_logger_init(&logger, stdout, stderr, stderr);
+
+	X11Setup x11_setup;
+	if (!x11_setup_init(&x11_setup, &logger.base, 640, 480, "GLSL Prototyper")) {
+		return EXIT_FAILURE;
+	}
+
+	StdlibFileSystem file_system;
 	stdlib_file_system_init(&file_system, &logger.base);
+
+	StdlibAllocator allocator;
 	stdlib_allocator_init(&allocator, &logger.base);
 
-	if (!x11_setup_init(&x11_setup, &logger.base, 640, 480, "GLSL Prototyper")) {
-		return exit_status;
-	}
+	Platform platform;
+	platform.logger = &logger.base;
+	platform.allocator = &allocator.base;
+	platform.file_system = &file_system.base;
 
-	if (!gl_program_init_from_files(
-		&program,
-		&logger.base,
-		&allocator.base,
-		&file_system.base,
-		"res/shaders/test.vert",
-		"res/shaders/test.frag"
-	)) {
-		goto out_x11_setup_fini;
-	}
-
-	if (!gl_mesh_init(&mesh, &logger.base, vertices, 3, indices, 3)) {
-		goto out_program_fini;
-	}
+	Proto proto;
+	proto_init(&proto, &platform);
 
 	while (handle_events(&x11_setup.connection)) {
-		glClear(GL_COLOR_BUFFER_BIT);
-		gl_program_use(&program);
-		gl_mesh_render(&mesh);
+		proto_tick(&proto);
 		x11_gl_window_swap_buffers(&x11_setup.window);
 	}
 
-	exit_status = EXIT_SUCCESS;
-	gl_mesh_fini(&mesh);
-out_program_fini:
-	gl_program_fini(&program);
-out_x11_setup_fini:
+	proto_fini(&proto);
 	x11_setup_fini(&x11_setup);
-	return exit_status;
+	return EXIT_SUCCESS;
 }
