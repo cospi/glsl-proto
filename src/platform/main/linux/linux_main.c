@@ -4,8 +4,6 @@
 #include "../../log/stdlib/stdlib_logger.h"
 #include "../../memory/stdlib/stdlib_allocator.h"
 #include "../../video/x11/x11_setup.h"
-#include "../../../gl/gl_mesh.h"
-#include "../../../gl/gl_program.h"
 #include "../../../proto/proto.h"
 
 static bool handle_events(const X11Connection *connection)
