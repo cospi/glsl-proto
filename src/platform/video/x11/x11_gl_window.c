@@ -150,3 +150,15 @@ void x11_gl_window_swap_buffers(const X11GlWindow *_this)
 
 	glXSwapBuffers(_this->connection->display, _this->window);
 }
+
+void x11_gl_window_get_size(const X11GlWindow *_this, unsigned int *out_width, unsigned int *out_height)
+{
+	assert(_this != NULL);
+	assert(out_width != NULL);
+	assert(out_height != NULL);
+
+	XWindowAttributes window_attribs;
+	XGetWindowAttributes(_this->connection->display, _this->window, &window_attribs);
+	*out_width = (unsigned int)window_attribs.width;
+	*out_height = (unsigned int)window_attribs.height;
+}

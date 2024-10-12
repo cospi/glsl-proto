@@ -51,7 +51,11 @@ void proto_tick(const Proto *_this, float delta_time_sec)
 	Logger *logger = _this->platform->logger;
 	logger->log(logger, LOG_LEVEL_INFO, "%f", (double)delta_time_sec);
 
+	const Platform *platform = _this->platform;
+	glViewport(0, 0, (GLint)platform->window_width, (GLint)platform->window_height);
+
 	glClear(GL_COLOR_BUFFER_BIT);
+
 	if (_this->program_initialized && _this->mesh_initialized) {
 		gl_program_use(&_this->program);
 		gl_mesh_render(&_this->mesh);

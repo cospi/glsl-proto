@@ -23,5 +23,6 @@ bool x11_gl_window_init(
 );
 void x11_gl_window_fini(const X11GlWindow *_this);
 void x11_gl_window_swap_buffers(const X11GlWindow *_this);
+void x11_gl_window_get_size(const X11GlWindow *_this, unsigned int *out_width, unsigned int *out_height);
 
 #endif // PLATFORM_VIDEO_X11_X11_GL_WINDOW_H_

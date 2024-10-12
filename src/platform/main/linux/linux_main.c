@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 
 #include "../../file_system/stdlib/stdlib_file_system.h"
@@ -8,19 +9,39 @@
 #include "../../../proto/proto.h"
 #include "../../../time/time.h"
 
-static bool handle_events(const X11Connection *connection)
+typedef enum HandleEventsResult {
+	HANDLE_EVENTS_RESULT_CONTINUE,
+	HANDLE_EVENTS_RESULT_EXIT
+} HandleEventsResult;
+
+static bool handle_events(const X11Setup *x11_setup, Platform *platform)
 {
+	assert(x11_setup != NULL);
+	assert(platform != NULL);
+
+	const X11Connection *connection = &x11_setup->connection;
 	Display *display = connection->display;
 	Atom wm_delete_window = connection->wm_delete_window;
+
 	while (XPending(display) > 0) {
 		XEvent e;
 		XNextEvent(display, &e);
-		if ((e.type == ClientMessage) && ((Atom)e.xclient.data.l[0] == wm_delete_window)) {
-			return false;
+		switch (e.type) {
+		case ClientMessage:
+			if ((Atom)e.xclient.data.l[0] == wm_delete_window) {
+				return HANDLE_EVENTS_RESULT_EXIT;
+			}
+			break;
+		case ConfigureNotify:
+			platform->window_width = (unsigned int)e.xconfigure.width;
+			platform->window_height = (unsigned int)e.xconfigure.height;
+			break;
+		default:
+			break;
 		}
 	}
 
-	return true;
+	return HANDLE_EVENTS_RESULT_CONTINUE;
 }
 
 int main(void)
@@ -43,6 +64,7 @@ int main(void)
 	stdlib_file_system_init(&file_system, &logger.base);
 	stdlib_allocator_init(&allocator, &logger.base);
 
+	x11_gl_window_get_size(&x11_setup.window, &platform.window_width, &platform.window_height);
 	platform.logger = &logger.base;
 	platform.allocator = &allocator.base;
 	platform.file_system = &file_system.base;
@@ -53,7 +75,7 @@ int main(void)
 		goto out_proto_fini;
 	}
 
-	while (handle_events(&x11_setup.connection)) {
+	while (handle_events(&x11_setup, &platform) == HANDLE_EVENTS_RESULT_CONTINUE) {
 		long long time_nsec;
 		if (!posix_time_nsec(&logger.base, &time_nsec)) {
 			goto out_proto_fini;
