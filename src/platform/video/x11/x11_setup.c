@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include "x11_gl_extensions.h"
+
 bool x11_setup_init(X11Setup *_this, Logger *logger, unsigned int width, unsigned int height, const char *title)
 {
 	assert(_this != NULL);
@@ -13,6 +15,7 @@ bool x11_setup_init(X11Setup *_this, Logger *logger, unsigned int width, unsigne
 	X11Connection *connection;
 	X11GlWindow *window;
 	X11GlContext *gl_context;
+	X11GlContextCurrent *gl_context_current;
 
 	connection = &_this->connection;
 	if (!x11_connection_init(connection, logger, NULL)) {
@@ -29,12 +32,19 @@ bool x11_setup_init(X11Setup *_this, Logger *logger, unsigned int width, unsigne
 		goto error_window_fini;
 	}
 
-	if (!x11_gl_context_current_init(&_this->gl_context_current, logger, gl_context)) {
+	gl_context_current = &_this->gl_context_current;
+	if (!x11_gl_context_current_init(gl_context_current, logger, gl_context)) {
 		goto error_gl_context_fini;
+	}
+
+	if (!x11_gl_init_extensions(logger)) {
+		goto error_gl_context_current_fini;
 	}
 
 	return true;
 
+error_gl_context_current_fini:
+	x11_gl_context_current_fini(gl_context_current);
 error_gl_context_fini:
 	x11_gl_context_fini(gl_context);
 error_window_fini:
