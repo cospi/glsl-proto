@@ -98,19 +98,18 @@ static void proto_init_cube_mesh(Proto *_this)
 	);
 }
 
-static void proto_init_sprite_batch_program(Proto *_this)
+static void proto_init_background_program(Proto *_this)
 {
 	assert(_this != NULL);
 
-	GlProgram *program = &_this->sprite_batch_program;
-	if ((_this->sprite_batch_program_initialized = proto_init_program(
+	GlProgram *program = &_this->background_program;
+	if ((_this->background_program_initialized = proto_init_program(
 		_this,
 		program,
-		"res/shaders/sprite_batch.vert",
-		"res/shaders/sprite_batch.frag"
+		"res/shaders/background.vert",
+		"res/shaders/background.frag"
 	))) {
-		_this->sprite_batch_projection_uniform_location =
-			gl_program_get_uniform_location(program, "u_projection");
+		_this->background_projection_uniform_location = gl_program_get_uniform_location(program, "u_projection");
 	}
 }
 
@@ -120,6 +119,21 @@ static void proto_init_background_texture(Proto *_this)
 
 	_this->background_texture_initialized =
 		proto_init_texture(_this, &_this->background_texture, "res/textures/background.tga");
+}
+
+static void proto_init_font_program(Proto *_this)
+{
+	assert(_this != NULL);
+
+	GlProgram *program = &_this->font_program;
+	if ((_this->font_program_initialized = proto_init_program(
+		_this,
+		program,
+		"res/shaders/font.vert",
+		"res/shaders/font.frag"
+	))) {
+		_this->font_projection_uniform_location = gl_program_get_uniform_location(program, "u_projection");
+	}
 }
 
 static void proto_init_font(Proto *_this)
@@ -189,20 +203,14 @@ static void proto_render_cube(Proto *_this)
 	gl_mesh_render(&_this->cube_mesh);
 }
 
-static void proto_setup_sprite_batch_projection(Proto *_this, const Matrix4 projection)
-{
-	assert(_this != NULL);
-	assert(projection != NULL);
-
-	int32_t projection_uniform_location = _this->sprite_batch_projection_uniform_location;
-	if (is_valid_uniform_location(projection_uniform_location)) {
-		set_uniform_matrix4(projection_uniform_location, projection);
-	}
-}
-
 static void proto_setup_background_projection(Proto *_this)
 {
 	assert(_this != NULL);
+
+	int32_t projection_uniform_location = _this->background_projection_uniform_location;
+	if (!is_valid_uniform_location(projection_uniform_location)) {
+		return;
+	}
 
 	const Rect2 *rect = &_this->background_sprite.rect;
 	Vector2 rect_min, rect_max;
@@ -210,7 +218,7 @@ static void proto_setup_background_projection(Proto *_this)
 
 	Matrix4 projection;
 	matrix4_orthographic(projection, rect_min.x, rect_max.x, rect_min.y, rect_max.y, NEAR_PLANE, FAR_PLANE);
-	proto_setup_sprite_batch_projection(_this, projection);
+	set_uniform_matrix4(projection_uniform_location, projection);
 }
 
 static void proto_render_background(Proto *_this)
@@ -218,9 +226,9 @@ static void proto_render_background(Proto *_this)
 	assert(_this != NULL);
 
 	if (
-		!_this->sprite_batch_program_initialized
-		|| !_this->sprite_batch_initialized
+		!_this->background_program_initialized
 		|| !_this->background_texture_initialized
+		|| !_this->sprite_batch_initialized
 	) {
 		return;
 	}
@@ -233,7 +241,7 @@ static void proto_render_background(Proto *_this)
 	gl_sprite_batch_push_sprite(sprite_batch, &_this->background_sprite);
 	gl_sprite_batch_end_push_sprites(sprite_batch);
 
-	gl_program_use(&_this->sprite_batch_program);
+	gl_program_use(&_this->background_program);
 	proto_setup_background_projection(_this);
 	gl_texture_bind(&_this->background_texture);
 	gl_sprite_batch_render(sprite_batch);
@@ -242,6 +250,11 @@ static void proto_render_background(Proto *_this)
 static void proto_setup_font_projection(Proto *_this)
 {
 	assert(_this != NULL);
+
+	int32_t projection_uniform_location = _this->font_projection_uniform_location;
+	if (!is_valid_uniform_location(projection_uniform_location)) {
+		return;
+	}
 
 	const Platform *platform = _this->platform;
 
@@ -252,21 +265,17 @@ static void proto_setup_font_projection(Proto *_this)
 		(float)platform->window_width,
 		0.0f,
 		(float)platform->window_height,
-		0.0f,
-		-1000.0f
+		NEAR_PLANE,
+		FAR_PLANE
 	);
-	proto_setup_sprite_batch_projection(_this, projection);
+	set_uniform_matrix4(projection_uniform_location, projection);
 }
 
 static void proto_render_text(Proto *_this)
 {
 	assert(_this != NULL);
 
-	if (
-		!_this->sprite_batch_program_initialized
-		|| !_this->sprite_batch_initialized
-		|| !_this->font_texture_initialized
-	) {
+	if (!_this->font_program_initialized || !_this->font_texture_initialized || !_this->sprite_batch_initialized) {
 		return;
 	}
 
@@ -285,7 +294,7 @@ static void proto_render_text(Proto *_this)
 	);
 	gl_sprite_batch_end_push_sprites(sprite_batch);
 
-	gl_program_use(&_this->sprite_batch_program);
+	gl_program_use(&_this->font_program);
 	proto_setup_font_projection(_this);
 	gl_texture_bind(&_this->font_texture);
 	gl_sprite_batch_render(sprite_batch);
@@ -304,16 +313,17 @@ void proto_init(Proto *_this, const Platform *platform)
 	_this->cube_position = (Vector3) { 0.0f, 0.0f, -2.0f };
 	_this->cube_rotation_axis = vector3_normalized((Vector3) { 1.0f, 1.0f, 0.0f });
 
-	proto_init_sprite_batch_program(_this);
-	proto_init_sprite_batch(_this);
-
+	proto_init_background_program(_this);
 	proto_init_background_texture(_this);
 	_this->background_sprite = (Sprite) {
 		(Rect2) { (Vector2) { 0.0f, 0.0f }, (Vector2) { 1.0f, 1.0f } },
 		(Rect2) { (Vector2) { 0.0f, 0.0f }, (Vector2) { 1.0f, 1.0f } }
 	};
 
+	proto_init_font_program(_this);
 	proto_init_font(_this);
+
+	proto_init_sprite_batch(_this);
 
 	_this->time_sec = 0.0f;
 
@@ -327,20 +337,24 @@ void proto_fini(const Proto *_this)
 {
 	assert(_this != NULL);
 
+	if (_this->sprite_batch_initialized) {
+		gl_sprite_batch_fini(&_this->sprite_batch);
+	}
+
 	if (_this->font_texture_initialized) {
 		gl_texture_fini(&_this->font_texture);
+	}
+
+	if (_this->font_program_initialized) {
+		gl_program_fini(&_this->font_program);
 	}
 
 	if (_this->background_texture_initialized) {
 		gl_texture_fini(&_this->background_texture);
 	}
 
-	if (_this->sprite_batch_initialized) {
-		gl_sprite_batch_fini(&_this->sprite_batch);
-	}
-
-	if (_this->sprite_batch_program_initialized) {
-		gl_program_fini(&_this->sprite_batch_program);
+	if (_this->background_program_initialized) {
+		gl_program_fini(&_this->background_program);
 	}
 
 	if (_this->cube_mesh_initialized) {
@@ -381,13 +395,18 @@ void proto_reload(Proto *_this)
 		gl_texture_fini(&_this->font_texture);
 	}
 
+	if (_this->font_program_initialized) {
+		_this->font_projection_uniform_location = -1;
+		gl_program_fini(&_this->font_program);
+	}
+
 	if (_this->background_texture_initialized) {
 		gl_texture_fini(&_this->background_texture);
 	}
 
-	if (_this->sprite_batch_program_initialized) {
-		_this->sprite_batch_projection_uniform_location = -1;
-		gl_program_fini(&_this->sprite_batch_program);
+	if (_this->background_program_initialized) {
+		_this->background_projection_uniform_location = -1;
+		gl_program_fini(&_this->background_program);
 	}
 
 	if (_this->cube_texture_initialized) {
@@ -401,8 +420,9 @@ void proto_reload(Proto *_this)
 
 	proto_init_cube_program(_this);
 	proto_init_cube_texture(_this);
-	proto_init_sprite_batch_program(_this);
+	proto_init_background_program(_this);
 	proto_init_background_texture(_this);
+	proto_init_font_program(_this);
 	proto_init_font(_this);
 
 	_this->time_sec = 0.0f;

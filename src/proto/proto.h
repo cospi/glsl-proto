@@ -23,21 +23,25 @@ typedef struct Proto {
 	Vector3 cube_position;
 	Vector3 cube_rotation_axis;
 
-	GlProgram sprite_batch_program;
-	bool sprite_batch_program_initialized;
-	int32_t sprite_batch_projection_uniform_location;
-
-	GlSpriteBatch sprite_batch;
-	bool sprite_batch_initialized;
+	GlProgram background_program;
+	bool background_program_initialized;
+	int32_t background_projection_uniform_location;
 
 	GlTexture background_texture;
 	bool background_texture_initialized;
 
 	Sprite background_sprite;
 
+	GlProgram font_program;
+	bool font_program_initialized;
+	int32_t font_projection_uniform_location;
+
 	GlTexture font_texture;
 	bool font_texture_initialized;
 	TextureFont font;
+
+	GlSpriteBatch sprite_batch;
+	bool sprite_batch_initialized;
 
 	float time_sec;
 } Proto;
