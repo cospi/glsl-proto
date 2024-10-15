@@ -23,7 +23,7 @@ bool x11_setup_init(X11Setup *_this, Logger *logger, unsigned int width, unsigne
 	}
 
 	window = &_this->window;
-	if (!x11_gl_window_init(window, logger, connection, 640, 480, "GLSL Prototyper")) {
+	if (!x11_gl_window_init(window, logger, connection, width, height, title)) {
 		goto error_connection_fini;
 	}
 

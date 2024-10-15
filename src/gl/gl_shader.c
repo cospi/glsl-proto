@@ -47,9 +47,8 @@ static bool compile_shader(GLuint shader, Logger *logger, Allocator *allocator)
 	return true;
 }
 
-static char *read_shader_source(Logger *logger, Allocator *allocator, FileSystem *file_system, const char *path)
+static char *read_shader_source(Allocator *allocator, FileSystem *file_system, const char *path)
 {
-	assert(logger != NULL);
 	assert(allocator != NULL);
 	assert(file_system != NULL);
 	assert(path != NULL);
@@ -132,7 +131,7 @@ bool gl_shader_init_from_file(
 	assert(file_system != NULL);
 	assert(path != NULL);
 
-	char *source = read_shader_source(logger, allocator, file_system, path);
+	char *source = read_shader_source(allocator, file_system, path);
 	if (source == NULL) {
 		return false;
 	}
