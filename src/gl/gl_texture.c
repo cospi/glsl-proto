@@ -8,6 +8,9 @@ bool gl_texture_init_from_image(GlTexture *_this, Logger *logger, const Image *i
 	assert(logger != NULL);
 	assert(image != NULL);
 
+	uint16_t width = image->width;
+	uint16_t height = image->height;
+
 	GLuint texture;
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -20,8 +23,8 @@ bool gl_texture_init_from_image(GlTexture *_this, Logger *logger, const Image *i
 		GL_TEXTURE_2D,
 		0,
 		GL_RGBA,
-		(GLsizei)image->width,
-		(GLsizei)image->height,
+		(GLsizei)width,
+		(GLsizei)height,
 		0,
 		GL_RGBA,
 		GL_UNSIGNED_BYTE,
@@ -35,6 +38,8 @@ bool gl_texture_init_from_image(GlTexture *_this, Logger *logger, const Image *i
 
 	_this->logger = logger;
 	_this->texture = texture;
+	_this->width = width;
+	_this->height = height;
 	logger->log(logger, LOG_LEVEL_INFO, "Created OpenGL texture (%lu).", texture);
 	return true;
 }

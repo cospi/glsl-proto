@@ -7,6 +7,8 @@
 typedef struct GlTexture {
 	Logger *logger;
 	GLuint texture;
+	uint16_t width;
+	uint16_t height;
 } GlTexture;
 
 bool gl_texture_init_from_image(GlTexture *_this, Logger *logger, const Image *image);

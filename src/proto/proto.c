@@ -33,7 +33,18 @@ void proto_init(Proto *_this, const Platform *platform)
 		"res/textures/test.tga"
 	);
 
-	_this->sprite_batch_initialized = gl_sprite_batch_init(&_this->sprite_batch, logger, allocator, 4);
+	_this->font_texture_initialized = gl_texture_init_from_tga_file(
+		&_this->font_texture,
+		logger,
+		allocator,
+		file_system,
+		"res/textures/font.tga"
+	);
+	if (_this->font_texture_initialized) {
+		texture_font_init(&_this->font, &_this->font_texture, 16, 16);
+	}
+
+	_this->sprite_batch_initialized = gl_sprite_batch_init(&_this->sprite_batch, logger, allocator, 1024);
 
 	Vertex2 vertices[] = {
 		(Vertex2) { (Vector2) { 160.0f, 120.0f }, (Vector2) { 0.0f, 0.0f } },
@@ -43,6 +54,10 @@ void proto_init(Proto *_this, const Platform *platform)
 	};
 	uint16_t indices[] = { 0, 1, 2, 2, 3, 0 };
 	_this->mesh_initialized = gl_mesh_init(&_this->mesh, logger, vertices, 4, indices, 6);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void proto_fini(const Proto *_this)
@@ -55,6 +70,10 @@ void proto_fini(const Proto *_this)
 
 	if (_this->sprite_batch_initialized) {
 		gl_sprite_batch_fini(&_this->sprite_batch);
+	}
+
+	if (_this->font_texture_initialized) {
+		gl_texture_fini(&_this->font_texture);
 	}
 
 	if (_this->texture_initialized) {
@@ -89,37 +108,28 @@ void proto_tick(Proto *_this, float delta_time_sec)
 	int32_t projection_uniform_location = _this->projection_uniform_location;
 	if (projection_uniform_location != -1) {
 		Matrix4 projection;
-		matrix4_ortho(projection, 0.0f, (float)width, 0.0f, (float)height, 0.0f, -1000.0f);
+		matrix4_orthographic(projection, 0.0f, (float)width, 0.0f, (float)height, 0.0f, -1000.0f);
 		glUniformMatrix4fv(projection_uniform_location, 1, GL_TRUE, projection);
 	}
 
-	if (_this->texture_initialized) {
+	if (_this->texture_initialized && _this->mesh_initialized) {
 		gl_texture_bind(&_this->texture);
-	}
-
-	if (_this->mesh_initialized) {
 		gl_mesh_render(&_this->mesh);
 	}
 
-	if (_this->sprite_batch_initialized) {
+	if (_this->font_texture_initialized && _this->sprite_batch_initialized) {
+		gl_texture_bind(&_this->font_texture);
+
 		GlSpriteBatch *sprite_batch = &_this->sprite_batch;
 		if (gl_sprite_batch_start_push_sprites(sprite_batch)) {
-			for (int i = 0;i < 4; ++i) {
-				float f = (float)i;
-				float offset_x = f * 80.0f;
-				float offset_y = f * 60.0f;
-				Sprite sprite = (Sprite) {
-					(Rect2) {
-						(Vector2) { 160.0f + offset_x, 120.0f + offset_y },
-						(Vector2) { 80.0f, 60.0f }
-					},
-					(Rect2) {
-						(Vector2) { 0.0f, 0.0f },
-						(Vector2) { 1.0f, 1.0f }
-					}
-				};
-				gl_sprite_batch_push_sprite(sprite_batch, &sprite);
-			}
+			gl_sprite_batch_push_text(
+				sprite_batch,
+				&_this->font,
+				"Testing text rendering\nAnother line\nAnd another one",
+				(Vector2) { 8.0f, (float)height - 8.0f },
+				2.0f,
+				8.0f
+			);
 			gl_sprite_batch_end_push_sprites(sprite_batch);
 			gl_sprite_batch_render(sprite_batch);
 		}

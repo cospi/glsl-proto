@@ -13,7 +13,7 @@ static inline void matrix4_zero(Matrix4 _this)
 	memset(_this, 0, sizeof(Matrix4));
 }
 
-static inline void matrix4_ortho(
+static inline void matrix4_orthographic(
 	Matrix4 _this,
 	float left,
 	float right,

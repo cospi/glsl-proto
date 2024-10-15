@@ -4,8 +4,8 @@
 #include "../gl/gl_mesh.h"
 #include "../gl/gl_program.h"
 #include "../gl/gl_sprite_batch.h"
-#include "../gl/gl_texture.h"
 #include "../platform/platform.h"
+#include "../render/texture_font.h"
 
 typedef struct Proto {
 	const Platform *platform;
@@ -14,8 +14,13 @@ typedef struct Proto {
 	bool program_initialized;
 	int32_t projection_uniform_location;
 
-	GlTexture  texture;
+	GlTexture texture;
 	bool texture_initialized;
+
+	GlTexture font_texture;
+	bool font_texture_initialized;
+
+	TextureFont font;
 
 	GlSpriteBatch sprite_batch;
 	bool sprite_batch_initialized;

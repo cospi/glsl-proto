@@ -144,6 +144,41 @@ void gl_sprite_batch_push_sprite(GlSpriteBatch *_this, const Sprite *sprite)
 	++_this->sprite_count;
 }
 
+void gl_sprite_batch_push_text(
+	GlSpriteBatch *_this,
+	const TextureFont *font,
+	const char *text,
+	Vector2 position,
+	float scale,
+	float newline_offset
+)
+{
+	assert(_this != NULL);
+	assert(font != NULL);
+	assert(text != NULL);
+
+	Vector2 character_size = vector2_scale(&font->character_size, scale);
+	Sprite character_sprite;
+	character_sprite.rect = (Rect2) {
+		(Vector2) { position.x, position.y - character_size.y },
+		character_size
+	};
+	character_sprite.uv.size = font->character_uv_size;
+
+	char character;
+	while ((character = *(text++)) != '\0') {
+		if (character == '\n') {
+			character_sprite.rect.position.x = position.x;
+			character_sprite.rect.position.y -= character_size.y + newline_offset;
+			continue;
+		}
+
+		character_sprite.uv.position = texture_font_get_character_uv(font, character);
+		gl_sprite_batch_push_sprite(_this, &character_sprite);
+		character_sprite.rect.position.x += character_size.x;
+	}
+}
+
 void gl_sprite_batch_end_push_sprites(GlSpriteBatch *_this)
 {
 	assert(_this != NULL);

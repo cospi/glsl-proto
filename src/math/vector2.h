@@ -16,4 +16,19 @@ static inline Vector2 vector2_sum(const Vector2 *left, const Vector2 *right)
 	return (Vector2) { left->x + right->x, left->y + right->y };
 }
 
+static inline Vector2 vector2_difference(const Vector2 *left, const Vector2 *right)
+{
+	assert(left != NULL);
+	assert(right != NULL);
+
+	return (Vector2) { left->x - right->x, left->y - right->y };
+}
+
+static inline Vector2 vector2_scale(const Vector2 *left, float right)
+{
+	assert(left != NULL);
+
+	return (Vector2) { left->x * right, left->y * right };
+}
+
 #endif // MATH_VECTOR2_H_

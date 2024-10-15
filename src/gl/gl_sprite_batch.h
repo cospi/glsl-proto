@@ -7,6 +7,7 @@
 #include "gl_vertex_array.h"
 #include "../memory/allocator.h"
 #include "../render/sprite.h"
+#include "../render/texture_font.h"
 #include "../render/vertex2.h"
 
 typedef struct GlSpriteBatch {
@@ -23,6 +24,14 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 void gl_sprite_batch_fini(const GlSpriteBatch *_this);
 bool gl_sprite_batch_start_push_sprites(GlSpriteBatch *_this);
 void gl_sprite_batch_push_sprite(GlSpriteBatch *_this, const Sprite *sprite);
+void gl_sprite_batch_push_text(
+	GlSpriteBatch *_this,
+	const TextureFont *font,
+	const char *text,
+	Vector2 position,
+	float scale,
+	float newline_offset
+);
 void gl_sprite_batch_end_push_sprites(GlSpriteBatch *_this);
 void gl_sprite_batch_render(const GlSpriteBatch *_this);
 
