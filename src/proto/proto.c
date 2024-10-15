@@ -2,6 +2,16 @@
 
 #include "../math/matrix4.h"
 
+static bool is_valid_uniform_location(int32_t uniform_location)
+{
+	return uniform_location != -1;
+}
+
+static void set_uniform_matrix4(int32_t uniform_location, Matrix4 matrix)
+{
+	glUniformMatrix4fv(uniform_location, 1, GL_TRUE, matrix);
+}
+
 static void proto_init_program(Proto *_this)
 {
 	assert(_this != NULL);
@@ -76,6 +86,71 @@ static void proto_init_mesh(Proto *_this)
 	_this->mesh_initialized = gl_mesh_init(&_this->mesh, _this->platform->logger, vertices, 4, indices, 6);
 }
 
+static void proto_setup_viewport(Proto *_this)
+{
+	assert(_this != NULL);
+
+	const Platform *platform = _this->platform;
+	glViewport(0, 0, (GLint)platform->window_width, (GLint)platform->window_height);
+}
+
+static void proto_setup_projection(Proto *_this)
+{
+	assert(_this != NULL);
+
+	int32_t projection_uniform_location = _this->projection_uniform_location;
+	if (is_valid_uniform_location(projection_uniform_location)) {
+		const Platform *platform = _this->platform;
+		Matrix4 projection;
+		matrix4_orthographic(
+			projection,
+			0.0f,
+			(float)platform->window_width,
+			0.0f,
+			(float)platform->window_height,
+			0.0f,
+			-1000.0f
+		);
+		set_uniform_matrix4(projection_uniform_location, projection);
+	}
+}
+
+static void proto_render_mesh(Proto *_this)
+{
+	assert(_this != NULL);
+
+	if (_this->mesh_texture_initialized && _this->mesh_initialized) {
+		gl_texture_bind(&_this->mesh_texture);
+		gl_mesh_render(&_this->mesh);
+	}
+}
+
+static void proto_render_text(Proto *_this)
+{
+	assert(_this != NULL);
+
+	if (!_this->font_texture_initialized || !_this->sprite_batch_initialized) {
+		return;
+	}
+
+	GlSpriteBatch *sprite_batch = &_this->sprite_batch;
+	if (!gl_sprite_batch_start_push_sprites(sprite_batch)) {
+		return;
+	}
+
+	gl_sprite_batch_push_text(
+		sprite_batch,
+		&_this->font,
+		"Testing text rendering\nAnother line\nAnd another one",
+		(Vector2) { 8.0f, (float)_this->platform->window_height - 8.0f },
+		2.0f,
+		8.0f
+	);
+	gl_sprite_batch_end_push_sprites(sprite_batch);
+	gl_texture_bind(&_this->font_texture);
+	gl_sprite_batch_render(sprite_batch);
+}
+
 void proto_init(Proto *_this, const Platform *platform)
 {
 	assert(_this != NULL);
@@ -125,10 +200,7 @@ void proto_tick(Proto *_this, float delta_time_sec)
 	Logger *logger = _this->platform->logger;
 	logger->log(logger, LOG_LEVEL_INFO, "%f", (double)delta_time_sec);
 
-	const Platform *platform = _this->platform;
-	unsigned int width = platform->window_width;
-	unsigned int height = platform->window_height;
-	glViewport(0, 0, (GLint)width, (GLint)height);
+	proto_setup_viewport(_this);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -137,36 +209,9 @@ void proto_tick(Proto *_this, float delta_time_sec)
 	}
 
 	gl_program_use(&_this->program);
-
-	int32_t projection_uniform_location = _this->projection_uniform_location;
-	if (projection_uniform_location != -1) {
-		Matrix4 projection;
-		matrix4_orthographic(projection, 0.0f, (float)width, 0.0f, (float)height, 0.0f, -1000.0f);
-		glUniformMatrix4fv(projection_uniform_location, 1, GL_TRUE, projection);
-	}
-
-	if (_this->mesh_texture_initialized && _this->mesh_initialized) {
-		gl_texture_bind(&_this->mesh_texture);
-		gl_mesh_render(&_this->mesh);
-	}
-
-	if (_this->font_texture_initialized && _this->sprite_batch_initialized) {
-		gl_texture_bind(&_this->font_texture);
-
-		GlSpriteBatch *sprite_batch = &_this->sprite_batch;
-		if (gl_sprite_batch_start_push_sprites(sprite_batch)) {
-			gl_sprite_batch_push_text(
-				sprite_batch,
-				&_this->font,
-				"Testing text rendering\nAnother line\nAnd another one",
-				(Vector2) { 8.0f, (float)height - 8.0f },
-				2.0f,
-				8.0f
-			);
-			gl_sprite_batch_end_push_sprites(sprite_batch);
-			gl_sprite_batch_render(sprite_batch);
-		}
-	}
+	proto_setup_projection(_this);
+	proto_render_mesh(_this);
+	proto_render_text(_this);
 }
 
 void proto_reload(Proto *_this)
