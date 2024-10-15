@@ -4,6 +4,10 @@
 #include "../math/matrix4.h"
 #include "../render/cube.h"
 
+#define FOV_RADIANS (60.0f * DEGREES_TO_RADIANS)
+#define NEAR_PLANE 0.0f
+#define FAR_PLANE -1000.0f
+
 static bool is_valid_uniform_location(int32_t uniform_location)
 {
 	return uniform_location != -1;
@@ -157,15 +161,15 @@ static void proto_setup_cube_transform(Proto *_this)
 	const Platform *platform = _this->platform;
 
 	Matrix4 translate, rotate, model, projection, transform;
-	matrix4_translate(translate, (Vector3) { 0.0f, 0.0f, -2.0f });
-	matrix4_rotate(rotate, vector3_normalized((Vector3) { 1.0f, 1.0f, 0.0f }), _this->time_sec);
+	matrix4_translate(translate, _this->cube_position);
+	matrix4_rotate(rotate, _this->cube_rotation_axis, _this->time_sec);
 	matrix4_product(model, translate, rotate);
 	matrix4_perspective(
 		projection,
-		60.0f * DEGREES_TO_RADIANS,
+		FOV_RADIANS,
 		(float)platform->window_width / (float)platform->window_height,
-		0.0f,
-		-1000.0f
+		NEAR_PLANE,
+		FAR_PLANE
 	);
 	matrix4_product(transform, projection, model);
 	set_uniform_matrix4(transform_uniform_location, transform);
@@ -200,8 +204,12 @@ static void proto_setup_background_projection(Proto *_this)
 {
 	assert(_this != NULL);
 
+	const Rect2 *rect = &_this->background_sprite.rect;
+	Vector2 rect_min, rect_max;
+	rect2_min_max(rect, &rect_min, &rect_max);
+
 	Matrix4 projection;
-	matrix4_orthographic(projection, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -1000.0f);
+	matrix4_orthographic(projection, rect_min.x, rect_max.x, rect_min.y, rect_max.y, NEAR_PLANE, FAR_PLANE);
 	proto_setup_sprite_batch_projection(_this, projection);
 }
 
@@ -222,11 +230,7 @@ static void proto_render_background(Proto *_this)
 		return;
 	}
 
-	Sprite sprite = (Sprite) {
-		(Rect2) { (Vector2) { 0.0f, 0.0f }, (Vector2) { 1.0f, 1.0f } },
-		(Rect2) { (Vector2) { 0.0f, 0.0f }, (Vector2) { 1.0f, 1.0f } }
-	};
-	gl_sprite_batch_push_sprite(sprite_batch, &sprite);
+	gl_sprite_batch_push_sprite(sprite_batch, &_this->background_sprite);
 	gl_sprite_batch_end_push_sprites(sprite_batch);
 
 	gl_program_use(&_this->sprite_batch_program);
@@ -297,11 +301,17 @@ void proto_init(Proto *_this, const Platform *platform)
 	proto_init_cube_program(_this);
 	proto_init_cube_texture(_this);
 	proto_init_cube_mesh(_this);
+	_this->cube_position = (Vector3) { 0.0f, 0.0f, -2.0f };
+	_this->cube_rotation_axis = vector3_normalized((Vector3) { 1.0f, 1.0f, 0.0f });
 
 	proto_init_sprite_batch_program(_this);
 	proto_init_sprite_batch(_this);
 
 	proto_init_background_texture(_this);
+	_this->background_sprite = (Sprite) {
+		(Rect2) { (Vector2) { 0.0f, 0.0f }, (Vector2) { 1.0f, 1.0f } },
+		(Rect2) { (Vector2) { 0.0f, 0.0f }, (Vector2) { 1.0f, 1.0f } }
+	};
 
 	proto_init_font(_this);
 

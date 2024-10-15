@@ -126,13 +126,11 @@ void gl_sprite_batch_push_sprite(GlSpriteBatch *_this, const Sprite *sprite)
 	assert(sprite != NULL);
 
 	const Rect2 *rect = &sprite->rect;
-	Vector2 rect_min;
-	Vector2 rect_max;
+	Vector2 rect_min, rect_max;
 	rect2_min_max(rect, &rect_min, &rect_max);
 
 	const Rect2 *uv = &sprite->uv;
-	Vector2 uv_min;
-	Vector2 uv_max;
+	Vector2 uv_min, uv_max;
 	rect2_min_max(uv, &uv_min, &uv_max);
 
 	Vertex2 *vertices = _this->mapped_vertex_buffer + (_this->sprite_count * 4);

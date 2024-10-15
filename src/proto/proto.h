@@ -20,6 +20,9 @@ typedef struct Proto {
 	GlMesh cube_mesh;
 	bool cube_mesh_initialized;
 
+	Vector3 cube_position;
+	Vector3 cube_rotation_axis;
+
 	GlProgram sprite_batch_program;
 	bool sprite_batch_program_initialized;
 	int32_t sprite_batch_projection_uniform_location;
@@ -29,6 +32,8 @@ typedef struct Proto {
 
 	GlTexture background_texture;
 	bool background_texture_initialized;
+
+	Sprite background_sprite;
 
 	GlTexture font_texture;
 	bool font_texture_initialized;
