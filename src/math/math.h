@@ -1,0 +1,7 @@
+#ifndef MATH_MATH_H_
+#define MATH_MATH_H_
+
+#define PI 3.14159265358979323846f
+#define DEGREES_TO_RADIANS (PI / 180.0f)
+
+#endif // MATH_MATH_H_

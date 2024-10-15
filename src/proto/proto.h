@@ -10,12 +10,19 @@
 typedef struct Proto {
 	const Platform *platform;
 
-	GlProgram program;
-	bool program_initialized;
-	int32_t projection_uniform_location;
+	GlProgram mesh_program;
+	bool mesh_program_initialized;
+	int32_t mesh_transform_uniform_location;
 
 	GlTexture mesh_texture;
 	bool mesh_texture_initialized;
+
+	GlMesh mesh;
+	bool mesh_initialized;
+
+	GlProgram font_program;
+	bool font_program_initialized;
+	int32_t font_projection_uniform_location;
 
 	GlTexture font_texture;
 	bool font_texture_initialized;
@@ -25,8 +32,7 @@ typedef struct Proto {
 	GlSpriteBatch sprite_batch;
 	bool sprite_batch_initialized;
 
-	GlMesh mesh;
-	bool mesh_initialized;
+	float time_sec;
 } Proto;
 
 void proto_init(Proto *_this, const Platform *platform);

@@ -2,6 +2,7 @@
 #define MATH_VECTOR2_H_
 
 #include <assert.h>
+#include <stddef.h>
 
 typedef struct Vector2 {
 	float x;

@@ -7,7 +7,7 @@
 
 #include "gl_buffer.h"
 #include "gl_vertex_array.h"
-#include "../render/vertex2.h"
+#include "../render/vertex3.h"
 
 typedef struct GlMesh {
 	GlVertexArray vertex_array;
@@ -19,7 +19,7 @@ typedef struct GlMesh {
 bool gl_mesh_init(
 	GlMesh *_this,
 	Logger *logger,
-	const Vertex2 *vertices,
+	const Vertex3 *vertices,
 	size_t vertex_count,
 	const uint16_t *indices,
 	size_t index_count

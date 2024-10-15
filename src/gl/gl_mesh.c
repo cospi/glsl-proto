@@ -5,7 +5,7 @@
 bool gl_mesh_init(
 	GlMesh *_this,
 	Logger *logger,
-	const Vertex2 *vertices,
+	const Vertex3 *vertices,
 	size_t vertex_count,
 	const uint16_t *indices,
 	size_t index_count
@@ -29,7 +29,7 @@ bool gl_mesh_init(
 	gl_buffer_init(vertex_buffer, logger);
 	gl_buffer_bind(vertex_buffer, GL_ARRAY_BUFFER);
 	gl_clear_errors();
-	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(vertex_count * sizeof(Vertex2)), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(vertex_count * sizeof(Vertex3)), vertices, GL_STATIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
 		goto error_vertex_buffer_fini;
 	}
@@ -45,9 +45,11 @@ bool gl_mesh_init(
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2), (void *)offsetof(Vertex2, position));
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2), (void *)offsetof(Vertex2, uv));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3), (void *)offsetof(Vertex3, position));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3), (void *)offsetof(Vertex3, normal));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex3), (void *)offsetof(Vertex3, uv));
 
 	_this->index_count = (GLsizei)index_count;
 	return true;
