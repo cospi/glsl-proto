@@ -51,7 +51,7 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 
 	vertex_buffer = &_this->vertex_buffer;
 	gl_buffer_init(vertex_buffer, logger);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->buffer);
+	gl_buffer_bind(vertex_buffer, GL_ARRAY_BUFFER);
 	gl_clear_errors();
 	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(sprite_capacity * sizeof(Vertex2) * 4), NULL, GL_STATIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
@@ -60,7 +60,7 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 
 	index_buffer = &_this->index_buffer;
 	gl_buffer_init(index_buffer, logger);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer->buffer);
+	gl_buffer_bind(index_buffer, GL_ELEMENT_ARRAY_BUFFER);
 	gl_clear_errors();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)indices_size, indices, GL_STATIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
@@ -104,7 +104,7 @@ bool gl_sprite_batch_start_push_sprites(GlSpriteBatch *_this)
 	assert(_this != NULL);
 	assert(_this->mapped_vertex_buffer == NULL);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _this->vertex_buffer.buffer);
+	gl_buffer_bind(&_this->vertex_buffer, GL_ARRAY_BUFFER);
 
 	void *buffer = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 	if (buffer == NULL) {

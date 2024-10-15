@@ -11,5 +11,6 @@ typedef struct GlBuffer {
 
 void gl_buffer_init(GlBuffer *_this, Logger *logger);
 void gl_buffer_fini(const GlBuffer *_this);
+void gl_buffer_bind(const GlBuffer *_this, GLenum target);
 
 #endif // GL_GL_BUFFER_H_

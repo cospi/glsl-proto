@@ -25,3 +25,10 @@ void gl_buffer_fini(const GlBuffer *_this)
 	Logger *logger = _this->logger;
 	logger->log(logger, LOG_LEVEL_INFO, "Destroyed OpenGL buffer (%lu).", buffer);
 }
+
+void gl_buffer_bind(const GlBuffer *_this, GLenum target)
+{
+	assert(_this != NULL);
+
+	glBindBuffer(target, _this->buffer);
+}

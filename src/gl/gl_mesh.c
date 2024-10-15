@@ -27,7 +27,7 @@ bool gl_mesh_init(
 
 	vertex_buffer = &_this->vertex_buffer;
 	gl_buffer_init(vertex_buffer, logger);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->buffer);
+	gl_buffer_bind(vertex_buffer, GL_ARRAY_BUFFER);
 	gl_clear_errors();
 	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(vertex_count * sizeof(Vertex2)), vertices, GL_STATIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
@@ -36,7 +36,7 @@ bool gl_mesh_init(
 
 	index_buffer = &_this->index_buffer;
 	gl_buffer_init(index_buffer, logger);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer->buffer);
+	gl_buffer_bind(index_buffer, GL_ELEMENT_ARRAY_BUFFER);
 	gl_clear_errors();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)(index_count * sizeof(uint16_t)), indices, GL_STATIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
