@@ -1,12 +1,15 @@
 #ifndef MATH_MATRIX4_H_
 #define MATH_MATRIX4_H_
 
+#include <assert.h>
 #include <string.h>
 
 typedef float Matrix4[16];
 
 static inline void matrix4_zero(Matrix4 _this)
 {
+	assert(_this != NULL);
+
 	memset(_this, 0, sizeof(Matrix4));
 }
 
@@ -20,6 +23,8 @@ static inline void matrix4_ortho(
 	float far_plane
 )
 {
+	assert(_this != NULL);
+
 	matrix4_zero(_this);
 	_this[0] = 2.0f / (right - left);
 	_this[3] = (left + right) / (left - right);
