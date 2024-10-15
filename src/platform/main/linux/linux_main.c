@@ -14,10 +14,11 @@ typedef enum HandleEventsResult {
 	HANDLE_EVENTS_RESULT_EXIT
 } HandleEventsResult;
 
-static bool handle_events(const X11Setup *x11_setup, Platform *platform)
+static bool handle_events(const X11Setup *x11_setup, Platform *platform, Proto *proto)
 {
 	assert(x11_setup != NULL);
 	assert(platform != NULL);
+	assert(proto != NULL);
 
 	const X11Connection *connection = &x11_setup->connection;
 	Display *display = connection->display;
@@ -35,6 +36,9 @@ static bool handle_events(const X11Setup *x11_setup, Platform *platform)
 		case ConfigureNotify:
 			platform->window_width = (unsigned int)e.xconfigure.width;
 			platform->window_height = (unsigned int)e.xconfigure.height;
+			break;
+		case KeyPress:
+			proto_reload(proto);
 			break;
 		default:
 			break;
@@ -75,7 +79,7 @@ int main(void)
 		goto out_proto_fini;
 	}
 
-	while (handle_events(&x11_setup, &platform) == HANDLE_EVENTS_RESULT_CONTINUE) {
+	while (handle_events(&x11_setup, &platform, &proto) == HANDLE_EVENTS_RESULT_CONTINUE) {
 		long long time_nsec;
 		if (!posix_time_nsec(&logger.base, &time_nsec)) {
 			goto out_proto_fini;

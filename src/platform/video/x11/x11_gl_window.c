@@ -91,7 +91,7 @@ bool x11_gl_window_init(
 	XSetWindowAttributes window_attribs;
 	window_attribs.background_pixmap = None;
 	window_attribs.border_pixel = 0;
-	window_attribs.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask;
+	window_attribs.event_mask = StructureNotifyMask | KeyPressMask;
 	window_attribs.colormap = colormap;
 
 	Window window = XCreateWindow(

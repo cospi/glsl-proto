@@ -14,8 +14,8 @@ typedef struct Proto {
 	bool program_initialized;
 	int32_t projection_uniform_location;
 
-	GlTexture texture;
-	bool texture_initialized;
+	GlTexture mesh_texture;
+	bool mesh_texture_initialized;
 
 	GlTexture font_texture;
 	bool font_texture_initialized;
@@ -32,5 +32,6 @@ typedef struct Proto {
 void proto_init(Proto *_this, const Platform *platform);
 void proto_fini(const Proto *_this);
 void proto_tick(Proto *_this, float delta_time_sec);
+void proto_reload(Proto *_this);
 
 #endif // PROTO_PROTO_H_
