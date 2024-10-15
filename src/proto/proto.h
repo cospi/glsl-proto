@@ -43,6 +43,8 @@ typedef struct Proto {
 	GlSpriteBatch sprite_batch;
 	bool sprite_batch_initialized;
 
+	char text[1024];
+
 	float time_sec;
 } Proto;
 

@@ -1,5 +1,7 @@
 #include "proto.h"
 
+#include <stdio.h>
+
 #include "../math/math.h"
 #include "../math/matrix4.h"
 #include "../render/cube.h"
@@ -7,6 +9,9 @@
 #define FOV_RADIANS (60.0f * DEGREES_TO_RADIANS)
 #define NEAR_PLANE 0.0f
 #define FAR_PLANE -1000.0f
+#define TEXT_POSITION 8.0f
+#define TEXT_SCALE 2.0f
+#define NEWLINE_OFFSET 8.0f
 
 static bool is_valid_uniform_location(int32_t uniform_location)
 {
@@ -271,7 +276,7 @@ static void proto_setup_font_projection(Proto *_this)
 	set_uniform_matrix4(projection_uniform_location, projection);
 }
 
-static void proto_render_text(Proto *_this)
+static void proto_render_text(Proto *_this, float delta_time_sec)
 {
 	assert(_this != NULL);
 
@@ -284,13 +289,15 @@ static void proto_render_text(Proto *_this)
 		return;
 	}
 
+	sprintf(_this->text, "%d FPS", (int)(1.0f / delta_time_sec));
+
 	gl_sprite_batch_push_text(
 		sprite_batch,
 		&_this->font,
-		"Testing text rendering\nAnother line\nAnd another one",
-		(Vector2) { 8.0f, (float)_this->platform->window_height - 8.0f },
-		2.0f,
-		8.0f
+		_this->text,
+		(Vector2) { TEXT_POSITION, (float)_this->platform->window_height - TEXT_POSITION },
+		TEXT_SCALE,
+		NEWLINE_OFFSET
 	);
 	gl_sprite_batch_end_push_sprites(sprite_batch);
 
@@ -381,7 +388,7 @@ void proto_tick(Proto *_this, float delta_time_sec)
 	proto_render_background(_this);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	proto_render_cube(_this);
-	proto_render_text(_this);
+	proto_render_text(_this, delta_time_sec);
 }
 
 void proto_reload(Proto *_this)
