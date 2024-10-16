@@ -6,6 +6,7 @@
 #include "../memory/allocator.h"
 
 typedef struct Platform {
+	const char *executable_directory;
 	unsigned int window_width;
 	unsigned int window_height;
 	Logger *logger;

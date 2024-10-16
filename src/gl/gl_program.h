@@ -22,8 +22,9 @@ bool gl_program_init_from_files(
 	Logger *logger,
 	Allocator *allocator,
 	FileSystem *file_system,
-	const char *vertex_shader_path,
-	const char *fragment_shader_path
+	const char *executable_directory,
+	const char *vertex_shader_relative_path,
+	const char *fragment_shader_relative_path
 );
 void gl_program_fini(const GlProgram *_this);
 void gl_program_use(const GlProgram *_this);

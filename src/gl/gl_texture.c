@@ -49,17 +49,19 @@ bool gl_texture_init_from_tga_file(
 	Logger *logger,
 	Allocator *allocator,
 	FileSystem *file_system,
-	const char *path
+	const char *executable_directory,
+	const char *relative_path
 )
 {
 	assert(_this != NULL);
 	assert(logger != NULL);
 	assert(allocator != NULL);
 	assert(file_system != NULL);
-	assert(path != NULL);
+	assert(executable_directory != NULL);
+	assert(relative_path != NULL);
 
 	Image image;
-	if (!image_init_from_tga_file(&image, logger, allocator, file_system, path)) {
+	if (!image_init_from_tga_file(&image, logger, allocator, file_system, executable_directory, relative_path)) {
 		return false;
 	}
 

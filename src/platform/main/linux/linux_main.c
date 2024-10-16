@@ -1,6 +1,10 @@
+#include <unistd.h>
+#include <linux/limits.h>
+
 #include <assert.h>
 #include <stdlib.h>
 
+#include "../../file_system/executable/linux/linux_executable.h"
 #include "../../file_system/stdlib/stdlib_file_system.h"
 #include "../../log/stdlib/stdlib_logger.h"
 #include "../../memory/stdlib/stdlib_allocator.h"
@@ -8,6 +12,8 @@
 #include "../../video/x11/x11_setup.h"
 #include "../../../proto/proto.h"
 #include "../../../time/time.h"
+
+#include "../../../file_system/file_path.h"
 
 typedef enum HandleEventsResult {
 	HANDLE_EVENTS_RESULT_CONTINUE,
@@ -52,22 +58,29 @@ int main(void)
 {
 	int exit_status = EXIT_FAILURE;
 	StdlibLogger logger;
+	StdlibAllocator allocator;
+	char *executable_directory;
 	X11Setup x11_setup;
 	StdlibFileSystem file_system;
-	StdlibAllocator allocator;
 	Platform platform;
 	Proto proto;
 	long long previous_time_nsec;
 
 	stdlib_logger_init(&logger, stdout, stderr, stderr);
+	stdlib_allocator_init(&allocator, &logger.base);
 
-	if (!x11_setup_init(&x11_setup, &logger.base, 640, 480, "GLSL Prototyper")) {
+	executable_directory = linux_get_executable_directory(&logger.base, &allocator.base);
+	if (executable_directory == NULL) {
 		return exit_status;
 	}
 
-	stdlib_file_system_init(&file_system, &logger.base);
-	stdlib_allocator_init(&allocator, &logger.base);
+	if (!x11_setup_init(&x11_setup, &logger.base, 640, 480, "GLSL Prototyper")) {
+		goto out_free_executable_directory;
+	}
 
+	stdlib_file_system_init(&file_system, &logger.base);
+
+	platform.executable_directory = executable_directory;
 	x11_gl_window_get_size(&x11_setup.window, &platform.window_width, &platform.window_height);
 	platform.logger = &logger.base;
 	platform.allocator = &allocator.base;
@@ -95,5 +108,7 @@ int main(void)
 out_proto_fini:
 	proto_fini(&proto);
 	x11_setup_fini(&x11_setup);
+out_free_executable_directory:
+	allocator.base.free(&allocator.base, executable_directory);
 	return exit_status;
 }

@@ -145,7 +145,7 @@ else
 	CFLAGS += -DNDEBUG -O3
 endif
 
-CFLAGS += -D_POSIX_C_SOURCE=199309L
+CFLAGS += -D_POSIX_C_SOURCE=200112L
 
 LDFLAGS += -lX11 -lGL -lm
 
@@ -159,6 +159,7 @@ clean :
 $(OUT) : $(OBJ)
 	$(shell mkdir -p $(dir $@))
 	$(CC) $^ -o $@ $(LDFLAGS)
+	cp -r res/ $(BIN_DIR)res/
 
 $(OBJ_DIR)%$(OBJ_EXT) : $(SRC_DIR)%$(SRC_EXT)
 	$(shell mkdir -p $(dir $@) $(dir $(TARGET_OBJ_TO_DEP)))
