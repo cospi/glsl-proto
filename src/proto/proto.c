@@ -43,7 +43,6 @@ static bool proto_init_program(
 		platform->logger,
 		platform->allocator,
 		platform->file_system,
-		platform->executable_directory,
 		vertex_shader_path,
 		fragment_shader_path
 	);
@@ -61,7 +60,6 @@ static bool proto_init_texture(Proto *_this, GlTexture *texture, const char *pat
 		platform->logger,
 		platform->allocator,
 		platform->file_system,
-		platform->executable_directory,
 		path
 	);
 }

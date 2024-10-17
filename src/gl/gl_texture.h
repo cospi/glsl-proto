@@ -17,8 +17,7 @@ bool gl_texture_init_from_tga_file(
 	Logger *logger,
 	Allocator *allocator,
 	FileSystem *file_system,
-	const char *executable_directory,
-	const char *relative_path
+	const char *path
 );
 void gl_texture_fini(const GlTexture *_this);
 void gl_texture_bind(const GlTexture *_this);

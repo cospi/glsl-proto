@@ -4,6 +4,14 @@
 #include <inttypes.h>
 #include <stdio.h>
 
+static const char *stdlib_file_system_get_executable_directory(const FileSystem *_this)
+{
+	assert(_this != NULL);
+	assert(((uintptr_t)(const void *)_this % _Alignof(StdlibFileSystem)) == 0);
+
+	return ((const StdlibFileSystem *)_this)->executable_directory;
+}
+
 static FileHandle stdlib_file_system_open_file(FileSystem *_this, const char *path)
 {
 	assert(_this != NULL);
@@ -84,14 +92,17 @@ static bool stdlib_file_system_try_read_file(FileSystem *_this, FileHandle handl
 	return true;
 }
 
-void stdlib_file_system_init(StdlibFileSystem *_this, Logger *logger)
+void stdlib_file_system_init(StdlibFileSystem *_this, Logger *logger, const char *executable_directory)
 {
 	assert(_this != NULL);
 	assert(logger != NULL);
+	assert(executable_directory != NULL);
 
+	_this->base.get_executable_directory = stdlib_file_system_get_executable_directory;
 	_this->base.open_file = stdlib_file_system_open_file;
 	_this->base.close_file = stdlib_file_system_close_file;
 	_this->base.try_get_file_size = stdlib_file_system_try_get_file_size;
 	_this->base.try_read_file = stdlib_file_system_try_read_file;
 	_this->logger = logger;
+	_this->executable_directory = executable_directory;
 }

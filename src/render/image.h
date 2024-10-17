@@ -20,8 +20,7 @@ bool image_init_from_tga_file(
 	Logger *logger,
 	Allocator *allocator,
 	FileSystem *file_system,
-	const char *executable_directory,
-	const char *relative_path
+	const char *path
 );
 void image_fini(const Image *_this);
 

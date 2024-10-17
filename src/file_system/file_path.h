@@ -3,6 +3,6 @@
 
 #include "../memory/allocator.h"
 
-char *file_path_create(Allocator *allocator, const char *executable_directory, const char *relative_path);
+char *file_path_create_relative(Allocator *allocator, const char *executable_directory, const char *path);
 
 #endif // FILE_SYSTEM_FILE_PATH_H_

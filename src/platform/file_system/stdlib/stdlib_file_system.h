@@ -7,8 +7,9 @@
 typedef struct StdlibFileSystem {
 	FileSystem base;
 	Logger *logger;
+	const char *executable_directory;
 } StdlibFileSystem;
 
-void stdlib_file_system_init(StdlibFileSystem *_this, Logger *logger);
+void stdlib_file_system_init(StdlibFileSystem *_this, Logger *logger, const char *executable_directory);
 
 #endif // PLATFORM_FILE_SYSTEM_STDLIB_STDLIB_FILE_SYSTEM_H_

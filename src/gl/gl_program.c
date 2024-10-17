@@ -93,18 +93,16 @@ bool gl_program_init_from_files(
 	Logger *logger,
 	Allocator *allocator,
 	FileSystem *file_system,
-	const char *executable_directory,
-	const char *vertex_shader_relative_path,
-	const char *fragment_shader_relative_path
+	const char *vertex_shader_path,
+	const char *fragment_shader_path
 )
 {
 	assert(_this != NULL);
 	assert(logger != NULL);
 	assert(allocator != NULL);
 	assert(file_system != NULL);
-	assert(executable_directory != NULL);
-	assert(vertex_shader_relative_path != NULL);
-	assert(fragment_shader_relative_path != NULL);
+	assert(vertex_shader_path != NULL);
+	assert(fragment_shader_path != NULL);
 
 	GlShader shaders[2];
 
@@ -114,8 +112,7 @@ bool gl_program_init_from_files(
 		allocator,
 		file_system,
 		GL_VERTEX_SHADER,
-		executable_directory,
-		vertex_shader_relative_path
+		vertex_shader_path
 	)) {
 		return false;
 	}
@@ -126,8 +123,7 @@ bool gl_program_init_from_files(
 		allocator,
 		file_system,
 		GL_FRAGMENT_SHADER,
-		executable_directory,
-		fragment_shader_relative_path
+		fragment_shader_path
 	)) {
 		gl_shader_fini(&shaders[0]);
 		return false;

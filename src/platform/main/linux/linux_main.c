@@ -13,8 +13,6 @@
 #include "../../../proto/proto.h"
 #include "../../../time/time.h"
 
-#include "../../../file_system/file_path.h"
-
 typedef enum HandleEventsResult {
 	HANDLE_EVENTS_RESULT_CONTINUE,
 	HANDLE_EVENTS_RESULT_EXIT
@@ -78,9 +76,8 @@ int main(void)
 		goto out_free_executable_directory;
 	}
 
-	stdlib_file_system_init(&file_system, &logger.base);
+	stdlib_file_system_init(&file_system, &logger.base, executable_directory);
 
-	platform.executable_directory = executable_directory;
 	x11_gl_window_get_size(&x11_setup.window, &platform.window_width, &platform.window_height);
 	platform.logger = &logger.base;
 	platform.allocator = &allocator.base;

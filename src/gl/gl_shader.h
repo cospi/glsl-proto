@@ -26,8 +26,7 @@ bool gl_shader_init_from_file(
 	Allocator *allocator,
 	FileSystem *file_system,
 	GLenum type,
-	const char *executable_directory,
-	const char *relative_path
+	const char *path
 );
 void gl_shader_fini(const GlShader *_this);
 

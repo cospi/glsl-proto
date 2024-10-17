@@ -3,8 +3,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "../file_system/file_path.h"
-
 static const unsigned char UNCOMPRESSED_TGA_HEADER[] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static uint16_t parse_uint16_little_endian(const unsigned char *data)
@@ -19,18 +17,15 @@ bool image_init_from_tga_file(
 	Logger *logger,
 	Allocator *allocator,
 	FileSystem *file_system,
-	const char *executable_directory,
-	const char *relative_path
+	const char *path
 )
 {
 	assert(_this != NULL);
 	assert(logger != NULL);
 	assert(allocator != NULL);
 	assert(file_system != NULL);
-	assert(executable_directory != NULL);
-	assert(relative_path != NULL);
+	assert(path != NULL);
 
-	char *file_path;
 	FileHandle file;
 	size_t size;
 	unsigned char header[18];
@@ -40,13 +35,7 @@ bool image_init_from_tga_file(
 	unsigned char *pixels;
 	unsigned char *pixel;
 
-	file_path = file_path_create(allocator, executable_directory, relative_path);
-	if (file_path == NULL) {
-		return false;
-	}
-
-	file = file_system->open_file(file_system, file_path);
-	allocator->free(allocator, file_path);
+	file = file_system_open_file_relative(file_system, allocator, path);
 	if (file == NULL) {
 		return false;
 	}

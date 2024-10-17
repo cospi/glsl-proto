@@ -2,8 +2,6 @@
 
 #include <assert.h>
 
-#include "../file_system/file_path.h"
-
 static char *get_shader_info_log(GLuint shader, Logger *logger, Allocator *allocator)
 {
 	assert(shader != 0);
@@ -59,7 +57,7 @@ static char *read_shader_source(Allocator *allocator, FileSystem *file_system, c
 	size_t size;
 	char *source;
 
-	file = file_system->open_file(file_system, path);
+	file = file_system_open_file_relative(file_system, allocator, path);
 	if (file == NULL) {
 		return NULL;
 	}
@@ -124,24 +122,16 @@ bool gl_shader_init_from_file(
 	Allocator *allocator,
 	FileSystem *file_system,
 	GLenum type,
-	const char *executable_directory,
-	const char *relative_path
+	const char *path
 )
 {
 	assert(_this != NULL);
 	assert(logger != NULL);
 	assert(allocator != NULL);
 	assert(file_system != NULL);
-	assert(executable_directory != NULL);
-	assert(relative_path != NULL);
+	assert(path != NULL);
 
-	char *file_path = file_path_create(allocator, executable_directory, relative_path);
-	if (file_path == NULL) {
-		return false;
-	}
-
-	char *source = read_shader_source(allocator, file_system, file_path);
-	allocator->free(allocator, file_path);
+	char *source = read_shader_source(allocator, file_system, path);
 	if (source == NULL) {
 		return false;
 	}
