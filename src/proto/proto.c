@@ -398,15 +398,6 @@ void proto_reload(Proto *_this)
 	Logger *logger = _this->platform->logger;
 	logger->log(logger, LOG_LEVEL_INFO, "Reloading textures and shaders...");
 
-	if (_this->font_texture_initialized) {
-		gl_texture_fini(&_this->font_texture);
-	}
-
-	if (_this->font_program_initialized) {
-		_this->font_projection_uniform_location = -1;
-		gl_program_fini(&_this->font_program);
-	}
-
 	if (_this->background_texture_initialized) {
 		gl_texture_fini(&_this->background_texture);
 	}
@@ -429,8 +420,6 @@ void proto_reload(Proto *_this)
 	proto_init_cube_texture(_this);
 	proto_init_background_program(_this);
 	proto_init_background_texture(_this);
-	proto_init_font_program(_this);
-	proto_init_font(_this);
 
 	_this->time_sec = 0.0f;
 }
