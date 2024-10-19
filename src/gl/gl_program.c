@@ -82,6 +82,11 @@ bool gl_program_init_from_shaders(
 		return false;
 	}
 
+	GLint *uniform_locations = _this->uniform_locations;
+	for (size_t i = 0; i < GL_PROGRAM_MAX_UNIFORM_COUNT; ++i) {
+		uniform_locations[i] = -1;
+	}
+
 	_this->logger = logger;
 	_this->program = program;
 	logger->log(logger, LOG_LEVEL_INFO, "Created OpenGL program (%lu).", program);
@@ -152,16 +157,25 @@ void gl_program_use(const GlProgram *_this)
 	glUseProgram(_this->program);
 }
 
-int32_t gl_program_get_uniform_location(const GlProgram *_this, const char *uniform_name)
+void gl_program_load_uniform_location(GlProgram *_this, size_t index, const char *uniform_name)
 {
 	assert(_this != NULL);
+	assert(index < GL_PROGRAM_MAX_UNIFORM_COUNT);
 	assert(uniform_name != NULL);
 
-	int32_t uniform_location = glGetUniformLocation(_this->program, uniform_name);
+	GLint uniform_location = glGetUniformLocation(_this->program, uniform_name);
 	if (uniform_location == -1) {
 		Logger *logger = _this->logger;
 		logger->log(logger, LOG_LEVEL_ERROR, "Getting uniform location for \"%s\" failed.", uniform_name);
 	}
 
-	return uniform_location;
+	_this->uniform_locations[index] = uniform_location;
+}
+
+GLint gl_program_get_uniform_location(const GlProgram *_this, size_t index)
+{
+	assert(_this != NULL);
+	assert(index < GL_PROGRAM_MAX_UNIFORM_COUNT);
+
+	return _this->uniform_locations[index];
 }
