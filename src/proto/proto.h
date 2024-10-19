@@ -10,35 +10,23 @@
 typedef struct Proto {
 	const Platform *platform;
 
+	unsigned char flags;
+
 	GlProgram cube_program;
-	bool cube_program_initialized;
-
 	GlTexture cube_texture;
-	bool cube_texture_initialized;
-
 	GlMesh cube_mesh;
-	bool cube_mesh_initialized;
-
 	Vector3 cube_position;
 	Vector3 cube_rotation_axis;
 
 	GlProgram background_program;
-	bool background_program_initialized;
-
 	GlTexture background_texture;
-	bool background_texture_initialized;
-
 	Sprite background_sprite;
 
 	GlProgram font_program;
-	bool font_program_initialized;
-
 	GlTexture font_texture;
-	bool font_texture_initialized;
 	TextureFont font;
 
 	GlSpriteBatch sprite_batch;
-	bool sprite_batch_initialized;
 
 	char text[1024];
 

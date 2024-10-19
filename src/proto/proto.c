@@ -6,6 +6,28 @@
 #include "../math/matrix4.h"
 #include "../render/cube.h"
 
+#define CUBE_PROGRAM_INIT_FLAG 0x01
+#define CUBE_TEXTURE_INIT_FLAG 0x02
+#define CUBE_MESH_INIT_FLAG 0x04
+#define CUBE_RENDER_FLAGS (CUBE_PROGRAM_INIT_FLAG | CUBE_TEXTURE_INIT_FLAG | CUBE_MESH_INIT_FLAG)
+
+#define BACKGROUND_PROGRAM_INIT_FLAG 0x08
+#define BACKGROUND_TEXTURE_INIT_FLAG 0x10
+#define BACKGROUND_RENDER_FLAGS (BACKGROUND_PROGRAM_INIT_FLAG | BACKGROUND_TEXTURE_INIT_FLAG)
+
+#define FONT_PROGRAM_INIT_FLAG 0x20
+#define FONT_TEXTURE_INIT_FLAG 0x40
+#define TEXT_RENDER_FLAGS (FONT_PROGRAM_INIT_FLAG | FONT_TEXTURE_INIT_FLAG)
+
+#define SPRITE_BATCH_INIT_FLAG 0x80
+
+#define RELOAD_FLAGS ( \
+	CUBE_PROGRAM_INIT_FLAG \
+	| CUBE_TEXTURE_INIT_FLAG \
+	| BACKGROUND_PROGRAM_INIT_FLAG \
+	| BACKGROUND_TEXTURE_INIT_FLAG \
+)
+
 #define FOV_RADIANS (60.0f * DEGREES_TO_RADIANS)
 #define NEAR_PLANE 0.0f
 #define FAR_PLANE -1000.0f
@@ -69,13 +91,9 @@ static void proto_init_cube_program(Proto *_this)
 	assert(_this != NULL);
 
 	GlProgram *program = &_this->cube_program;
-	if ((_this->cube_program_initialized = proto_init_program(
-		_this,
-		program,
-		"res/shaders/cube.vert",
-		"res/shaders/cube.frag"
-	))) {
+	if (proto_init_program(_this, program, "res/shaders/cube.vert", "res/shaders/cube.frag")) {
 		gl_program_load_uniform_location(program, 0, "u_transform");
+		_this->flags |= CUBE_PROGRAM_INIT_FLAG;
 	}
 }
 
@@ -83,7 +101,9 @@ static void proto_init_cube_texture(Proto *_this)
 {
 	assert(_this != NULL);
 
-	_this->cube_texture_initialized = proto_init_texture(_this, &_this->cube_texture, "res/textures/cube.tga");
+	if (proto_init_texture(_this, &_this->cube_texture, "res/textures/cube.tga")) {
+		_this->flags |= CUBE_TEXTURE_INIT_FLAG;
+	}
 }
 
 static void proto_init_cube_mesh(Proto *_this)
@@ -93,14 +113,16 @@ static void proto_init_cube_mesh(Proto *_this)
 	Vertex3 vertices[CUBE_VERTEX_COUNT];
 	uint16_t indices[CUBE_INDEX_COUNT];
 	cube_init(vertices, indices);
-	_this->cube_mesh_initialized = gl_mesh_init(
+	if (gl_mesh_init(
 		&_this->cube_mesh,
 		_this->platform->logger,
 		vertices,
 		CUBE_VERTEX_COUNT,
 		indices,
 		CUBE_INDEX_COUNT
-	);
+	)) {
+		_this->flags |= CUBE_MESH_INIT_FLAG;
+	}
 }
 
 static void proto_init_background_program(Proto *_this)
@@ -108,13 +130,9 @@ static void proto_init_background_program(Proto *_this)
 	assert(_this != NULL);
 
 	GlProgram *program = &_this->background_program;
-	if ((_this->background_program_initialized = proto_init_program(
-		_this,
-		program,
-		"res/shaders/background.vert",
-		"res/shaders/background.frag"
-	))) {
+	if (proto_init_program(_this, program, "res/shaders/background.vert", "res/shaders/background.frag")) {
 		gl_program_load_uniform_location(program, 0, "u_projection");
+		_this->flags |= BACKGROUND_PROGRAM_INIT_FLAG;
 	}
 }
 
@@ -122,8 +140,9 @@ static void proto_init_background_texture(Proto *_this)
 {
 	assert(_this != NULL);
 
-	_this->background_texture_initialized =
-		proto_init_texture(_this, &_this->background_texture, "res/textures/background.tga");
+	if (proto_init_texture(_this, &_this->background_texture, "res/textures/background.tga")) {
+		_this->flags |= BACKGROUND_TEXTURE_INIT_FLAG;
+	}
 }
 
 static void proto_init_font_program(Proto *_this)
@@ -131,13 +150,14 @@ static void proto_init_font_program(Proto *_this)
 	assert(_this != NULL);
 
 	GlProgram *program = &_this->font_program;
-	if ((_this->font_program_initialized = proto_init_program(
+	if (proto_init_program(
 		_this,
 		program,
 		"res/shaders/font.vert",
 		"res/shaders/font.frag"
-	))) {
+	)) {
 		gl_program_load_uniform_location(program, 0, "u_projection");
+		_this->flags |= FONT_PROGRAM_INIT_FLAG;
 	}
 }
 
@@ -146,8 +166,9 @@ static void proto_init_font(Proto *_this)
 	assert(_this != NULL);
 
 	GlTexture *texture = &_this->font_texture;
-	if ((_this->font_texture_initialized = proto_init_texture(_this, texture, "res/textures/font.tga"))) {
+	if (proto_init_texture(_this, texture, "res/textures/font.tga")) {
 		texture_font_init(&_this->font, texture, 16, 16);
+		_this->flags |= FONT_TEXTURE_INIT_FLAG;
 	}
 }
 
@@ -156,8 +177,9 @@ static void proto_init_sprite_batch(Proto *_this)
 	assert(_this != NULL);
 
 	const Platform *platform = _this->platform;
-	_this->sprite_batch_initialized =
-		gl_sprite_batch_init(&_this->sprite_batch, platform->logger, platform->allocator, 1024);
+	if (gl_sprite_batch_init(&_this->sprite_batch, platform->logger, platform->allocator, 1024)) {
+		_this->flags |= SPRITE_BATCH_INIT_FLAG;
+	}
 }
 
 static void proto_setup_viewport(Proto *_this)
@@ -198,7 +220,7 @@ static void proto_render_cube(Proto *_this)
 {
 	assert(_this != NULL);
 
-	if (!_this->cube_program_initialized || !_this->cube_texture_initialized || !_this->cube_mesh_initialized) {
+	if ((_this->flags & CUBE_RENDER_FLAGS) != CUBE_RENDER_FLAGS) {
 		return;
 	}
 
@@ -230,11 +252,7 @@ static void proto_render_background(Proto *_this)
 {
 	assert(_this != NULL);
 
-	if (
-		!_this->background_program_initialized
-		|| !_this->background_texture_initialized
-		|| !_this->sprite_batch_initialized
-	) {
+	if ((_this->flags & BACKGROUND_RENDER_FLAGS) != BACKGROUND_RENDER_FLAGS) {
 		return;
 	}
 
@@ -280,7 +298,7 @@ static void proto_render_text(Proto *_this, float delta_time_sec)
 {
 	assert(_this != NULL);
 
-	if (!_this->font_program_initialized || !_this->font_texture_initialized || !_this->sprite_batch_initialized) {
+	if ((_this->flags & TEXT_RENDER_FLAGS) != TEXT_RENDER_FLAGS) {
 		return;
 	}
 
@@ -313,6 +331,7 @@ void proto_init(Proto *_this, const Platform *platform)
 	assert(platform != NULL);
 
 	_this->platform = platform;
+	_this->flags = 0;
 
 	proto_init_cube_program(_this);
 	proto_init_cube_texture(_this);
@@ -344,35 +363,37 @@ void proto_fini(const Proto *_this)
 {
 	assert(_this != NULL);
 
-	if (_this->sprite_batch_initialized) {
+	unsigned char flags = _this->flags;
+
+	if ((flags & SPRITE_BATCH_INIT_FLAG) == SPRITE_BATCH_INIT_FLAG) {
 		gl_sprite_batch_fini(&_this->sprite_batch);
 	}
 
-	if (_this->font_texture_initialized) {
+	if ((flags & FONT_TEXTURE_INIT_FLAG) == FONT_TEXTURE_INIT_FLAG) {
 		gl_texture_fini(&_this->font_texture);
 	}
 
-	if (_this->font_program_initialized) {
+	if ((flags & FONT_PROGRAM_INIT_FLAG) == FONT_PROGRAM_INIT_FLAG) {
 		gl_program_fini(&_this->font_program);
 	}
 
-	if (_this->background_texture_initialized) {
+	if ((flags & BACKGROUND_TEXTURE_INIT_FLAG) == BACKGROUND_TEXTURE_INIT_FLAG) {
 		gl_texture_fini(&_this->background_texture);
 	}
 
-	if (_this->background_program_initialized) {
+	if ((flags & BACKGROUND_PROGRAM_INIT_FLAG) == BACKGROUND_PROGRAM_INIT_FLAG) {
 		gl_program_fini(&_this->background_program);
 	}
 
-	if (_this->cube_mesh_initialized) {
+	if ((flags & CUBE_MESH_INIT_FLAG) == CUBE_MESH_INIT_FLAG) {
 		gl_mesh_fini(&_this->cube_mesh);
 	}
 
-	if (_this->cube_texture_initialized) {
+	if ((flags & CUBE_TEXTURE_INIT_FLAG) == CUBE_TEXTURE_INIT_FLAG) {
 		gl_texture_fini(&_this->cube_texture);
 	}
 
-	if (_this->cube_program_initialized) {
+	if ((flags & CUBE_PROGRAM_INIT_FLAG) == CUBE_PROGRAM_INIT_FLAG) {
 		gl_program_fini(&_this->cube_program);
 	}
 }
@@ -398,21 +419,25 @@ void proto_reload(Proto *_this)
 	Logger *logger = _this->platform->logger;
 	logger->log(logger, LOG_LEVEL_INFO, "Reloading textures and shaders...");
 
-	if (_this->background_texture_initialized) {
+	unsigned char flags = _this->flags;
+
+	if ((flags & BACKGROUND_TEXTURE_INIT_FLAG) == BACKGROUND_TEXTURE_INIT_FLAG) {
 		gl_texture_fini(&_this->background_texture);
 	}
 
-	if (_this->background_program_initialized) {
+	if ((flags & BACKGROUND_PROGRAM_INIT_FLAG) == BACKGROUND_PROGRAM_INIT_FLAG) {
 		gl_program_fini(&_this->background_program);
 	}
 
-	if (_this->cube_texture_initialized) {
+	if ((flags & CUBE_TEXTURE_INIT_FLAG) == CUBE_TEXTURE_INIT_FLAG) {
 		gl_texture_fini(&_this->cube_texture);
 	}
 
-	if (_this->cube_program_initialized) {
+	if ((flags & CUBE_PROGRAM_INIT_FLAG) == CUBE_PROGRAM_INIT_FLAG) {
 		gl_program_fini(&_this->cube_program);
 	}
+
+	_this->flags = (unsigned char)(flags & ~RELOAD_FLAGS);
 
 	proto_init_cube_program(_this);
 	proto_init_cube_texture(_this);
