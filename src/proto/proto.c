@@ -302,17 +302,20 @@ static void proto_render_text(Proto *_this, float delta_time_sec)
 		return;
 	}
 
+	char *text = _this->text;
+	if (sprintf(text, "%d FPS", (int)(1.0f / delta_time_sec)) < 0) {
+		return;
+	}
+
 	GlSpriteBatch *sprite_batch = &_this->sprite_batch;
 	if (!gl_sprite_batch_start_push_sprites(sprite_batch)) {
 		return;
 	}
 
-	sprintf(_this->text, "%d FPS", (int)(1.0f / delta_time_sec));
-
 	gl_sprite_batch_push_text(
 		sprite_batch,
 		&_this->font,
-		_this->text,
+		text,
 		(Vector2) { TEXT_POSITION, (float)_this->platform->window_height - TEXT_POSITION },
 		TEXT_SCALE,
 		NEWLINE_OFFSET
