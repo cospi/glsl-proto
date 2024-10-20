@@ -4,13 +4,14 @@
 #include "../gl/gl_mesh.h"
 #include "../gl/gl_program.h"
 #include "../gl/gl_sprite_batch.h"
+#include "../input/keycode.h"
 #include "../platform/platform.h"
 #include "../render/texture_font.h"
 
 typedef struct Proto {
 	const Platform *platform;
 
-	unsigned char flags;
+	uint16_t flags;
 
 	GlProgram cube_program;
 	GlTexture cube_texture;
@@ -36,6 +37,6 @@ typedef struct Proto {
 void proto_init(Proto *_this, const Platform *platform);
 void proto_fini(const Proto *_this);
 void proto_tick(Proto *_this, float delta_time_sec);
-void proto_reload(Proto *_this);
+void proto_key_press(Proto *_this, Keycode keycode);
 
 #endif // PROTO_PROTO_H_

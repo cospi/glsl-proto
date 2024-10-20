@@ -1,6 +1,3 @@
-#include <unistd.h>
-#include <linux/limits.h>
-
 #include <assert.h>
 #include <stdlib.h>
 
@@ -9,6 +6,7 @@
 #include "../../log/stdlib/stdlib_logger.h"
 #include "../../memory/stdlib/stdlib_allocator.h"
 #include "../../time/posix/posix_time.h"
+#include "../../video/x11/x11_input.h"
 #include "../../video/x11/x11_setup.h"
 #include "../../../proto/proto.h"
 #include "../../../time/time.h"
@@ -42,7 +40,7 @@ static bool handle_events(const X11Setup *x11_setup, Platform *platform, Proto *
 			platform->window_height = (unsigned int)e.xconfigure.height;
 			break;
 		case KeyPress:
-			proto_reload(proto);
+			proto_key_press(proto, x11_key_event_to_keycode(&e.xkey));
 			break;
 		default:
 			break;

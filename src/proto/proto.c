@@ -6,20 +6,22 @@
 #include "../math/matrix4.h"
 #include "../render/cube.h"
 
-#define CUBE_PROGRAM_INIT_FLAG 0x01
-#define CUBE_TEXTURE_INIT_FLAG 0x02
-#define CUBE_MESH_INIT_FLAG 0x04
-#define CUBE_RENDER_FLAGS (CUBE_PROGRAM_INIT_FLAG | CUBE_TEXTURE_INIT_FLAG | CUBE_MESH_INIT_FLAG)
+#define CUBE_PROGRAM_INIT_FLAG 0x001
+#define CUBE_TEXTURE_INIT_FLAG 0x002
+#define CUBE_MESH_INIT_FLAG 0x004
+#define CUBE_ACTIVE_FLAG 0x008
+#define CUBE_RENDER_FLAGS (CUBE_PROGRAM_INIT_FLAG | CUBE_TEXTURE_INIT_FLAG | CUBE_MESH_INIT_FLAG | CUBE_ACTIVE_FLAG)
 
-#define BACKGROUND_PROGRAM_INIT_FLAG 0x08
-#define BACKGROUND_TEXTURE_INIT_FLAG 0x10
-#define BACKGROUND_RENDER_FLAGS (BACKGROUND_PROGRAM_INIT_FLAG | BACKGROUND_TEXTURE_INIT_FLAG)
+#define BACKGROUND_PROGRAM_INIT_FLAG 0x010
+#define BACKGROUND_TEXTURE_INIT_FLAG 0x020
+#define BACKGROUND_ACTIVE_FLAG 0x040
+#define BACKGROUND_RENDER_FLAGS (BACKGROUND_PROGRAM_INIT_FLAG | BACKGROUND_TEXTURE_INIT_FLAG | BACKGROUND_ACTIVE_FLAG)
 
-#define FONT_PROGRAM_INIT_FLAG 0x20
-#define FONT_TEXTURE_INIT_FLAG 0x40
+#define FONT_PROGRAM_INIT_FLAG 0x080
+#define FONT_TEXTURE_INIT_FLAG 0x100
 #define TEXT_RENDER_FLAGS (FONT_PROGRAM_INIT_FLAG | FONT_TEXTURE_INIT_FLAG)
 
-#define SPRITE_BATCH_INIT_FLAG 0x80
+#define SPRITE_BATCH_INIT_FLAG 0x200
 
 #define RELOAD_FLAGS ( \
 	CUBE_PROGRAM_INIT_FLAG \
@@ -34,6 +36,11 @@
 #define TEXT_POSITION 8.0f
 #define TEXT_SCALE 2.0f
 #define NEWLINE_OFFSET 8.0f
+
+static const char *get_flag_text(bool flag)
+{
+	return flag ? "On" : "Off";
+}
 
 static bool is_valid_uniform_location(GLint uniform_location)
 {
@@ -302,8 +309,15 @@ static void proto_render_text(Proto *_this, float delta_time_sec)
 		return;
 	}
 
+	uint16_t flags = _this->flags;
 	char *text = _this->text;
-	if (sprintf(text, "%d FPS", (int)(1.0f / delta_time_sec)) < 0) {
+	if (sprintf(
+		text,
+		"%d FPS\nR: Reload shaders and textures\nB: Background [%s]\nC: Cube [%s]",
+		(int)(1.0f / delta_time_sec),
+		get_flag_text((flags & BACKGROUND_ACTIVE_FLAG) != 0),
+		get_flag_text((flags & CUBE_ACTIVE_FLAG) != 0)
+	) < 0) {
 		return;
 	}
 
@@ -328,13 +342,48 @@ static void proto_render_text(Proto *_this, float delta_time_sec)
 	gl_sprite_batch_render(sprite_batch);
 }
 
+static void proto_reload(Proto *_this)
+{
+	assert(_this != NULL);
+
+	Logger *logger = _this->platform->logger;
+	logger->log(logger, LOG_LEVEL_INFO, "Reloading textures and shaders...");
+
+	uint16_t flags = _this->flags;
+
+	if ((flags & BACKGROUND_TEXTURE_INIT_FLAG) == BACKGROUND_TEXTURE_INIT_FLAG) {
+		gl_texture_fini(&_this->background_texture);
+	}
+
+	if ((flags & BACKGROUND_PROGRAM_INIT_FLAG) == BACKGROUND_PROGRAM_INIT_FLAG) {
+		gl_program_fini(&_this->background_program);
+	}
+
+	if ((flags & CUBE_TEXTURE_INIT_FLAG) == CUBE_TEXTURE_INIT_FLAG) {
+		gl_texture_fini(&_this->cube_texture);
+	}
+
+	if ((flags & CUBE_PROGRAM_INIT_FLAG) == CUBE_PROGRAM_INIT_FLAG) {
+		gl_program_fini(&_this->cube_program);
+	}
+
+	_this->flags = (uint16_t)(flags & ~RELOAD_FLAGS);
+
+	proto_init_cube_program(_this);
+	proto_init_cube_texture(_this);
+	proto_init_background_program(_this);
+	proto_init_background_texture(_this);
+
+	_this->time_sec = 0.0f;
+}
+
 void proto_init(Proto *_this, const Platform *platform)
 {
 	assert(_this != NULL);
 	assert(platform != NULL);
 
 	_this->platform = platform;
-	_this->flags = 0;
+	_this->flags = CUBE_ACTIVE_FLAG | BACKGROUND_ACTIVE_FLAG;
 
 	proto_init_cube_program(_this);
 	proto_init_cube_texture(_this);
@@ -366,7 +415,7 @@ void proto_fini(const Proto *_this)
 {
 	assert(_this != NULL);
 
-	unsigned char flags = _this->flags;
+	uint16_t flags = _this->flags;
 
 	if ((flags & SPRITE_BATCH_INIT_FLAG) == SPRITE_BATCH_INIT_FLAG) {
 		gl_sprite_batch_fini(&_this->sprite_batch);
@@ -415,37 +464,21 @@ void proto_tick(Proto *_this, float delta_time_sec)
 	proto_render_text(_this, delta_time_sec);
 }
 
-void proto_reload(Proto *_this)
+void proto_key_press(Proto *_this, Keycode keycode)
 {
 	assert(_this != NULL);
 
-	Logger *logger = _this->platform->logger;
-	logger->log(logger, LOG_LEVEL_INFO, "Reloading textures and shaders...");
-
-	unsigned char flags = _this->flags;
-
-	if ((flags & BACKGROUND_TEXTURE_INIT_FLAG) == BACKGROUND_TEXTURE_INIT_FLAG) {
-		gl_texture_fini(&_this->background_texture);
+	switch (keycode) {
+	case KEYCODE_B:
+		_this->flags ^= BACKGROUND_ACTIVE_FLAG;
+		break;
+	case KEYCODE_C:
+		_this->flags ^= CUBE_ACTIVE_FLAG;
+		break;
+	case KEYCODE_R:
+		proto_reload(_this);
+		break;
+	default:
+		break;
 	}
-
-	if ((flags & BACKGROUND_PROGRAM_INIT_FLAG) == BACKGROUND_PROGRAM_INIT_FLAG) {
-		gl_program_fini(&_this->background_program);
-	}
-
-	if ((flags & CUBE_TEXTURE_INIT_FLAG) == CUBE_TEXTURE_INIT_FLAG) {
-		gl_texture_fini(&_this->cube_texture);
-	}
-
-	if ((flags & CUBE_PROGRAM_INIT_FLAG) == CUBE_PROGRAM_INIT_FLAG) {
-		gl_program_fini(&_this->cube_program);
-	}
-
-	_this->flags = (unsigned char)(flags & ~RELOAD_FLAGS);
-
-	proto_init_cube_program(_this);
-	proto_init_cube_texture(_this);
-	proto_init_background_program(_this);
-	proto_init_background_texture(_this);
-
-	_this->time_sec = 0.0f;
 }
