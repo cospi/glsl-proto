@@ -154,7 +154,7 @@ TARGET_OBJ_TO_DEP = $(@:$(OBJ_DIR)%$(OBJ_EXT)=$(DEP_DIR)%$(DEP_EXT))
 all : $(OUT)
 
 clean :
-	$(RM) -r $(OUT) $(INT_DIR)
+	$(RM) -r $(BIN_DIR) $(INT_DIR)
 
 $(OUT) : $(OBJ)
 	$(shell mkdir -p $(dir $@))

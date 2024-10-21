@@ -1,5 +1,6 @@
 #version 400 core
 
+uniform float u_time;
 uniform sampler2D u_texture;
 
 in vec2 v_uv;

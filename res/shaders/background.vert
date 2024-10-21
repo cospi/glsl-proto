@@ -1,6 +1,7 @@
 #version 400 core
 
 uniform mat4 u_projection;
+uniform float u_time;
 
 layout(location = 0) in vec2 a_position;
 layout(location = 1) in vec2 a_uv;

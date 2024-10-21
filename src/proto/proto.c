@@ -30,6 +30,14 @@
 	| BACKGROUND_TEXTURE_INIT_FLAG \
 )
 
+#define CUBE_TRANSFORM_INDEX 0
+#define CUBE_TIME_INDEX 1
+
+#define BACKGROUND_PROJECTION_INDEX 0
+#define BACKGROUND_TIME_INDEX 1
+
+#define FONT_PROJECTION_INDEX 0
+
 #define FOV_RADIANS (60.0f * DEGREES_TO_RADIANS)
 #define NEAR_PLANE 0.0f
 #define FAR_PLANE -1000.0f
@@ -45,6 +53,11 @@ static const char *get_flag_text(bool flag)
 static bool is_valid_uniform_location(GLint uniform_location)
 {
 	return uniform_location != -1;
+}
+
+static void set_uniform_float(GLint uniform_location, float value)
+{
+	glUniform1f(uniform_location, value);
 }
 
 static void set_uniform_matrix4(GLint uniform_location, const Matrix4 matrix)
@@ -99,7 +112,8 @@ static void proto_init_cube_program(Proto *_this)
 
 	GlProgram *program = &_this->cube_program;
 	if (proto_init_program(_this, program, "res/shaders/cube.vert", "res/shaders/cube.frag")) {
-		gl_program_load_uniform_location(program, 0, "u_transform");
+		gl_program_load_uniform_location(program, CUBE_TRANSFORM_INDEX, "u_transform");
+		gl_program_load_uniform_location(program, CUBE_TIME_INDEX, "u_time");
 		_this->flags |= CUBE_PROGRAM_INIT_FLAG;
 	}
 }
@@ -138,7 +152,8 @@ static void proto_init_background_program(Proto *_this)
 
 	GlProgram *program = &_this->background_program;
 	if (proto_init_program(_this, program, "res/shaders/background.vert", "res/shaders/background.frag")) {
-		gl_program_load_uniform_location(program, 0, "u_projection");
+		gl_program_load_uniform_location(program, BACKGROUND_PROJECTION_INDEX, "u_projection");
+		gl_program_load_uniform_location(program, BACKGROUND_TIME_INDEX, "u_time");
 		_this->flags |= BACKGROUND_PROGRAM_INIT_FLAG;
 	}
 }
@@ -163,7 +178,7 @@ static void proto_init_font_program(Proto *_this)
 		"res/shaders/font.vert",
 		"res/shaders/font.frag"
 	)) {
-		gl_program_load_uniform_location(program, 0, "u_projection");
+		gl_program_load_uniform_location(program, FONT_PROJECTION_INDEX, "u_projection");
 		_this->flags |= FONT_PROGRAM_INIT_FLAG;
 	}
 }
@@ -201,8 +216,8 @@ static void proto_setup_cube_transform(Proto *_this)
 {
 	assert(_this != NULL);
 
-	GLint transform_uniform_location = gl_program_get_uniform_location(&_this->cube_program, 0);
-	if (!is_valid_uniform_location(transform_uniform_location)) {
+	GLint uniform_location = gl_program_get_uniform_location(&_this->cube_program, CUBE_TRANSFORM_INDEX);
+	if (!is_valid_uniform_location(uniform_location)) {
 		return;
 	}
 
@@ -220,7 +235,17 @@ static void proto_setup_cube_transform(Proto *_this)
 		FAR_PLANE
 	);
 	matrix4_product(transform, projection, model);
-	set_uniform_matrix4(transform_uniform_location, transform);
+	set_uniform_matrix4(uniform_location, transform);
+}
+
+static void proto_setup_cube_time(Proto *_this)
+{
+	assert(_this != NULL);
+
+	GLint uniform_location = gl_program_get_uniform_location(&_this->cube_program, CUBE_TIME_INDEX);
+	if (is_valid_uniform_location(uniform_location)) {
+		set_uniform_float(uniform_location, _this->time_sec);
+	}
 }
 
 static void proto_render_cube(Proto *_this)
@@ -233,6 +258,7 @@ static void proto_render_cube(Proto *_this)
 
 	gl_program_use(&_this->cube_program);
 	proto_setup_cube_transform(_this);
+	proto_setup_cube_time(_this);
 	gl_texture_bind(&_this->cube_texture);
 	gl_mesh_render(&_this->cube_mesh);
 }
@@ -241,8 +267,9 @@ static void proto_setup_background_projection(Proto *_this)
 {
 	assert(_this != NULL);
 
-	GLint projection_uniform_location = gl_program_get_uniform_location(&_this->background_program, 0);
-	if (!is_valid_uniform_location(projection_uniform_location)) {
+	GLint uniform_location =
+		gl_program_get_uniform_location(&_this->background_program, BACKGROUND_PROJECTION_INDEX);
+	if (!is_valid_uniform_location(uniform_location)) {
 		return;
 	}
 
@@ -252,7 +279,17 @@ static void proto_setup_background_projection(Proto *_this)
 
 	Matrix4 projection;
 	matrix4_orthographic(projection, rect_min.x, rect_max.x, rect_min.y, rect_max.y, NEAR_PLANE, FAR_PLANE);
-	set_uniform_matrix4(projection_uniform_location, projection);
+	set_uniform_matrix4(uniform_location, projection);
+}
+
+static void proto_setup_background_time(Proto *_this)
+{
+	assert(_this != NULL);
+
+	GLint uniform_location = gl_program_get_uniform_location(&_this->background_program, BACKGROUND_TIME_INDEX);
+	if (is_valid_uniform_location(uniform_location)) {
+		set_uniform_float(uniform_location, _this->time_sec);
+	}
 }
 
 static void proto_render_background(Proto *_this)
@@ -273,6 +310,7 @@ static void proto_render_background(Proto *_this)
 
 	gl_program_use(&_this->background_program);
 	proto_setup_background_projection(_this);
+	proto_setup_background_time(_this);
 	gl_texture_bind(&_this->background_texture);
 	gl_sprite_batch_render(sprite_batch);
 }
@@ -281,8 +319,8 @@ static void proto_setup_font_projection(Proto *_this)
 {
 	assert(_this != NULL);
 
-	GLint projection_uniform_location = gl_program_get_uniform_location(&_this->font_program, 0);
-	if (!is_valid_uniform_location(projection_uniform_location)) {
+	GLint uniform_location = gl_program_get_uniform_location(&_this->font_program, FONT_PROJECTION_INDEX);
+	if (!is_valid_uniform_location(uniform_location)) {
 		return;
 	}
 
@@ -298,7 +336,7 @@ static void proto_setup_font_projection(Proto *_this)
 		NEAR_PLANE,
 		FAR_PLANE
 	);
-	set_uniform_matrix4(projection_uniform_location, projection);
+	set_uniform_matrix4(uniform_location, projection);
 }
 
 static void proto_render_text(Proto *_this, float delta_time_sec)
