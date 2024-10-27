@@ -21,6 +21,9 @@ static inline Vector3 vector3_sum(const Vector3 *left, const Vector3 *right)
 
 static inline float vector3_dot(const Vector3 *left, const Vector3 *right)
 {
+	assert(left != NULL);
+	assert(right != NULL);
+
 	return (left->x * right->x) + (left->y * right->y) + (left->z * right->z);
 }
 
