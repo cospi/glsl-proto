@@ -37,9 +37,11 @@ static void stdlib_file_system_close_file(FileSystem *_this, FileHandle handle)
 	assert(((uintptr_t)(void *)_this % _Alignof(StdlibFileSystem)) == 0);
 	assert(handle != NULL);
 
+	// \note Prevent -Wuse-after-free=3 from firing.
+	uintptr_t handle_value = (uintptr_t)handle;
 	fclose((FILE *)handle);
 	Logger *logger = ((const StdlibFileSystem *)_this)->logger;
-	logger->log(logger, LOG_LEVEL_INFO, "Closed file (%" PRIxPTR ").", (uintptr_t)handle);
+	logger->log(logger, LOG_LEVEL_INFO, "Closed file (%" PRIxPTR ").", handle_value);
 }
 
 static bool stdlib_file_system_try_get_file_size(FileSystem *_this, FileHandle handle, size_t *out_size)
