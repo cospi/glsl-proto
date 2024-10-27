@@ -13,7 +13,22 @@ SRC_EXT := .c
 OBJ_EXT := .o
 DEP_EXT := .d
 
-SRC := $(shell find $(SRC_DIR) -name *$(SRC_EXT))
+ifeq ($(OS), Windows_NT)
+	SRC := \
+		$(shell find $(SRC_DIR) -name *$(SRC_EXT) \
+		! -path "$(SRC_DIR)platform/file_system/executable/linux/*" \
+		! -path "$(SRC_DIR)platform/main/linux/*" \
+		! -path "$(SRC_DIR)platform/time/posix/*" \
+		! -path "$(SRC_DIR)platform/video/x11/*")
+else
+	SRC := \
+		$(shell find $(SRC_DIR) -name *$(SRC_EXT) \
+		! -path "$(SRC_DIR)platform/file_system/executable/windows/*" \
+		! -path "$(SRC_DIR)platform/main/windows/*" \
+		! -path "$(SRC_DIR)platform/time/win32/*" \
+		! -path "$(SRC_DIR)platform/video/win32/*")
+endif
+
 OBJ := $(SRC:$(SRC_DIR)%$(SRC_EXT)=$(OBJ_DIR)%$(OBJ_EXT))
 DEP := $(SRC:$(SRC_DIR)%$(SRC_EXT)=$(DEP_DIR)%$(DEP_EXT))
 OUT := $(BIN_DIR)glsl-proto
@@ -134,6 +149,7 @@ CFLAGS += \
 	-Wunused-macros \
 	-Wunused-result \
 	-Wunused-variable \
+	-Wuse-after-free=3 \
 	-Wvarargs \
 	-Wvla \
 	-Wvolatile-register-var \
@@ -147,7 +163,13 @@ endif
 
 CFLAGS += -D_POSIX_C_SOURCE=200112L
 
-LDFLAGS += -lX11 -lGL -lm
+LDFLAGS += -lm
+
+ifeq ($(OS), Windows_NT)
+	LDFLAGS += -lgdi32 -lopengl32
+else
+	LDFLAGS += -lX11 -lGL
+endif
 
 TARGET_OBJ_TO_DEP = $(@:$(OBJ_DIR)%$(OBJ_EXT)=$(DEP_DIR)%$(DEP_EXT))
 

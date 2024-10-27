@@ -28,9 +28,11 @@ static void stdlib_allocator_free(Allocator *_this, void *memory)
 	assert(((uintptr_t)(void *)_this % _Alignof(StdlibAllocator)) == 0);
 	assert(memory != NULL);
 
+	// \note Prevent -Wuse-after-free=3 from firing.
+	uintptr_t memory_location = (uintptr_t)memory;
 	free(memory);
 	Logger *logger = ((const StdlibAllocator *)_this)->logger;
-	logger->log(logger, LOG_LEVEL_INFO, "Freed memory (%" PRIxPTR ").", (uintptr_t)memory);
+	logger->log(logger, LOG_LEVEL_INFO, "Freed memory (%" PRIxPTR ").", memory_location);
 }
 
 void stdlib_allocator_init(StdlibAllocator *_this, Logger *logger)

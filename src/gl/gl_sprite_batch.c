@@ -53,7 +53,7 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 	gl_buffer_init(vertex_buffer, logger);
 	gl_buffer_bind(vertex_buffer, GL_ARRAY_BUFFER);
 	gl_clear_errors();
-	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(sprite_capacity * sizeof(Vertex2) * 4), NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(sprite_capacity * sizeof(Vertex2) * 4), NULL, GL_DYNAMIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
 		goto error_vertex_buffer_fini;
 	}
