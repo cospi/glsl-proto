@@ -16,7 +16,7 @@ typedef enum HandleEventsResult {
 	HANDLE_EVENTS_RESULT_EXIT
 } HandleEventsResult;
 
-static bool handle_events(const X11Setup *x11_setup, Platform *platform, Proto *proto)
+static HandleEventsResult handle_events(const X11Setup *x11_setup, Platform *platform, Proto *proto)
 {
 	assert(x11_setup != NULL);
 	assert(platform != NULL);
