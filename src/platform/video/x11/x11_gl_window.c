@@ -142,7 +142,7 @@ void x11_gl_window_fini(const X11GlWindow *_this)
 	XDestroyWindow(display, window);
 	XFreeColormap(display, _this->colormap);
 	Logger *logger = _this->logger;
-	logger->log(logger, LOG_LEVEL_INFO, "Closed X OpenGL window (%lu).", window);
+	logger->log(logger, LOG_LEVEL_INFO, "Destroyed X OpenGL window (%lu).", window);
 }
 
 void x11_gl_window_swap_buffers(const X11GlWindow *_this)
