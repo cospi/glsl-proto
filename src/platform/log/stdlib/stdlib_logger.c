@@ -13,6 +13,8 @@ static const char *LOG_LEVEL_NAMES[] = {
 
 static FILE *stdlib_logger_get_log_level_stream(const StdlibLogger *_this, LogLevel level)
 {
+	assert(_this != NULL);
+
 	switch (level) {
 	case LOG_LEVEL_INFO:
 		return _this->info_stream;
