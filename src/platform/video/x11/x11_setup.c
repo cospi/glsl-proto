@@ -24,32 +24,32 @@ bool x11_setup_init(X11Setup *_this, Logger *logger, unsigned int width, unsigne
 
 	window = &_this->window;
 	if (!x11_gl_window_init(window, logger, connection, width, height, title)) {
-		goto error_connection_fini;
+		goto error_fini_connection;
 	}
 
 	gl_context = &_this->gl_context;
 	if (!x11_gl_context_init(gl_context, logger, window)) {
-		goto error_window_fini;
+		goto error_fini_window;
 	}
 
 	gl_context_current = &_this->gl_context_current;
 	if (!x11_gl_context_current_init(gl_context_current, logger, gl_context)) {
-		goto error_gl_context_fini;
+		goto error_fini_gl_context;
 	}
 
 	if (!x11_gl_init_extensions(logger)) {
-		goto error_gl_context_current_fini;
+		goto error_fini_gl_context_current;
 	}
 
 	return true;
 
-error_gl_context_current_fini:
+error_fini_gl_context_current:
 	x11_gl_context_current_fini(gl_context_current);
-error_gl_context_fini:
+error_fini_gl_context:
 	x11_gl_context_fini(gl_context);
-error_window_fini:
+error_fini_window:
 	x11_gl_window_fini(window);
-error_connection_fini:
+error_fini_connection:
 	x11_connection_fini(connection);
 	return false;
 }

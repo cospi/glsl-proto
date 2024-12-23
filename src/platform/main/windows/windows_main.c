@@ -106,11 +106,11 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previous_instance, PSTR command
 	proto_init(&proto, &platform);
 
 	if (!win32_performance_frequency(&logger.base, &performance_frequency)) {
-		goto out_proto_fini;
+		goto out_fini_proto;
 	}
 
 	if (!win32_performance_counter(&logger.base, &previous_performance_counter)) {
-		goto out_proto_fini;
+		goto out_fini_proto;
 	}
 
 	while (handle_events() == HANDLE_EVENTS_RESULT_CONTINUE) {
@@ -118,7 +118,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previous_instance, PSTR command
 		LONGLONG delta_performance_counter;
 
 		if (!win32_performance_counter(&logger.base, &performance_counter)) {
-			goto out_proto_fini;
+			goto out_fini_proto;
 		}
 
 		delta_performance_counter = performance_counter - previous_performance_counter;
@@ -130,7 +130,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previous_instance, PSTR command
 	}
 
 	exit_status = EXIT_SUCCESS;
-out_proto_fini:
+out_fini_proto:
 	proto_fini(&proto);
 	win32_setup_fini(&win32_setup);
 out_free_executable_directory:

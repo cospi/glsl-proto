@@ -55,7 +55,7 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 	gl_clear_errors();
 	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(sprite_capacity * sizeof(Vertex2) * 4), NULL, GL_DYNAMIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
-		goto error_vertex_buffer_fini;
+		goto error_fini_vertex_buffer;
 	}
 
 	index_buffer = &_this->index_buffer;
@@ -64,7 +64,7 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 	gl_clear_errors();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)indices_size, indices, GL_STATIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
-		goto error_index_buffer_fini;
+		goto error_fini_index_buffer;
 	}
 
 	allocator->free(allocator, indices);
@@ -81,9 +81,9 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 	_this->mapped_vertex_buffer = NULL;
 	return true;
 
-error_index_buffer_fini:
+error_fini_index_buffer:
 	gl_buffer_fini(index_buffer);
-error_vertex_buffer_fini:
+error_fini_vertex_buffer:
 	gl_buffer_fini(vertex_buffer);
 	gl_vertex_array_fini(vertex_array);
 	allocator->free(allocator, indices);

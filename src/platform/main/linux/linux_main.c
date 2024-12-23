@@ -84,13 +84,13 @@ int main(void)
 	proto_init(&proto, &platform);
 
 	if (!posix_time_nsec(&logger.base, &previous_time_nsec)) {
-		goto out_proto_fini;
+		goto out_fini_proto;
 	}
 
 	while (handle_events(&x11_setup, &platform, &proto) == HANDLE_EVENTS_RESULT_CONTINUE) {
 		long long time_nsec;
 		if (!posix_time_nsec(&logger.base, &time_nsec)) {
-			goto out_proto_fini;
+			goto out_fini_proto;
 		}
 
 		proto_tick(&proto, (float)((long double)(time_nsec - previous_time_nsec) / NSEC_PER_SEC));
@@ -100,7 +100,7 @@ int main(void)
 	}
 
 	exit_status = EXIT_SUCCESS;
-out_proto_fini:
+out_fini_proto:
 	proto_fini(&proto);
 	x11_setup_fini(&x11_setup);
 out_free_executable_directory:

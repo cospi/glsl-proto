@@ -91,7 +91,7 @@ bool win32_gl_init_context_creation_extensions(Logger *logger, HINSTANCE instanc
 	dummy_context = create_dummy_context(dummy_window.device_context);
 	if (dummy_context == NULL) {
 		logger->log(logger, LOG_LEVEL_ERROR, "Creating Win32 OpenGL dummy context failed.");
-		goto out_dummy_window_fini;
+		goto out_fini_dummy_window;
 	}
 
 	if (!win32_gl_context_current_init_raw(
@@ -110,14 +110,14 @@ bool win32_gl_init_context_creation_extensions(Logger *logger, HINSTANCE instanc
 	wgl_choose_pixel_format_arb = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
 	if (wgl_choose_pixel_format_arb == NULL) {
 		logger->log(logger, LOG_LEVEL_ERROR, "wglChoosePixelFormatARB not found.");
-		goto out_dummy_gl_context_current_fini;
+		goto out_fini_dummy_gl_context_current;
 	}
 
 	wgl_create_context_attribs_arb =
 		(PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
 	if (wgl_create_context_attribs_arb == NULL) {
 		logger->log(logger, LOG_LEVEL_ERROR, "wglCreateContextAttribsARB not found.");
-		goto out_dummy_gl_context_current_fini;
+		goto out_fini_dummy_gl_context_current;
 	}
 
 	#pragma GCC diagnostic pop
@@ -126,11 +126,11 @@ bool win32_gl_init_context_creation_extensions(Logger *logger, HINSTANCE instanc
 	wglCreateContextAttribsARB = wgl_create_context_attribs_arb;
 
 	exit_status = true;
-out_dummy_gl_context_current_fini:
+out_fini_dummy_gl_context_current:
 	win32_gl_context_current_fini(&dummy_gl_context_current);
 out_delete_dummy_context:
 	wglDeleteContext(dummy_context);
-out_dummy_window_fini:
+out_fini_dummy_window:
 	win32_gl_window_fini(&dummy_window);
 	return exit_status;
 }

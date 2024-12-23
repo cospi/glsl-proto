@@ -49,26 +49,26 @@ bool win32_setup_init(
 
 	gl_context = &_this->gl_context;
 	if (!win32_gl_context_init(gl_context, logger, window)) {
-		goto error_window_fini;
+		goto error_fini_window;
 	}
 
 	gl_context_current = &_this->gl_context_current;
 	if (!win32_gl_context_current_init(gl_context_current, logger, gl_context)) {
-		goto error_gl_context_fini;
+		goto error_fini_gl_context;
 	}
 
 	if (!win32_gl_init_extensions(logger)) {
-		goto error_gl_context_current_fini;
+		goto error_fini_gl_context_current;
 	}
 
 	win32_gl_window_show(window);
 	return true;
 
-error_gl_context_current_fini:
+error_fini_gl_context_current:
 	win32_gl_context_current_fini(gl_context_current);
-error_gl_context_fini:
+error_fini_gl_context:
 	win32_gl_context_fini(gl_context);
-error_window_fini:
+error_fini_window:
 	win32_gl_window_fini(window);
 	return false;
 }
