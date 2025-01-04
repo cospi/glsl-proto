@@ -47,7 +47,7 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 
 	vertex_array = &_this->vertex_array;
 	gl_vertex_array_init(vertex_array, logger);
-	glBindVertexArray(vertex_array->vertex_array);
+	gl_vertex_array_bind(vertex_array);
 
 	vertex_buffer = &_this->vertex_buffer;
 	gl_buffer_init(vertex_buffer, logger);
@@ -190,6 +190,6 @@ void gl_sprite_batch_render(const GlSpriteBatch *_this)
 {
 	assert(_this != NULL);
 
-	glBindVertexArray(_this->vertex_array.vertex_array);
+	gl_vertex_array_bind(&_this->vertex_array);
 	glDrawElements(GL_TRIANGLES, (GLsizei)(_this->sprite_count * 6), GL_UNSIGNED_SHORT, NULL);
 }

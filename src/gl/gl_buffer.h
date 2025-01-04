@@ -1,8 +1,8 @@
 #ifndef GL_GL_BUFFER_H_
 #define GL_GL_BUFFER_H_
 
-#include "../log/logger.h"
 #include "gl.h"
+#include "../log/logger.h"
 
 typedef struct GlBuffer {
 	Logger *logger;

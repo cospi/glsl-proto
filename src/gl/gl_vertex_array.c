@@ -25,3 +25,10 @@ void gl_vertex_array_fini(const GlVertexArray *_this)
 	Logger *logger = _this->logger;
 	logger->log(logger, LOG_LEVEL_INFO, "Destroyed OpenGL vertex array (%lu).", vertex_array);
 }
+
+void gl_vertex_array_bind(const GlVertexArray *_this)
+{
+	assert(_this != NULL);
+
+	glBindVertexArray(_this->vertex_array);
+}

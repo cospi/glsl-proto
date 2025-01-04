@@ -24,7 +24,7 @@ bool gl_mesh_init(
 
 	vertex_array = &_this->vertex_array;
 	gl_vertex_array_init(vertex_array, logger);
-	glBindVertexArray(vertex_array->vertex_array);
+	gl_vertex_array_bind(vertex_array);
 
 	vertex_buffer = &_this->vertex_buffer;
 	gl_buffer_init(vertex_buffer, logger);
@@ -78,6 +78,6 @@ void gl_mesh_render(const GlMesh *_this)
 {
 	assert(_this != NULL);
 
-	glBindVertexArray(_this->vertex_array.vertex_array);
+	gl_vertex_array_bind(&_this->vertex_array);
 	glDrawElements(GL_TRIANGLES, _this->index_count, GL_UNSIGNED_SHORT, NULL);
 }
