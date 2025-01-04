@@ -32,6 +32,7 @@ bool gl_mesh_init(
 	gl_clear_errors();
 	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(vertex_count * sizeof(Vertex3)), vertices, GL_STATIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
+		logger->log(logger, LOG_LEVEL_ERROR, "Initializing OpenGL vertex buffer data failed.");
 		goto error_fini_vertex_buffer;
 	}
 
@@ -41,6 +42,7 @@ bool gl_mesh_init(
 	gl_clear_errors();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)(index_count * sizeof(uint16_t)), indices, GL_STATIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
+		logger->log(logger, LOG_LEVEL_ERROR, "Initializing OpenGL index buffer data failed.");
 		goto error_fini_index_buffer;
 	}
 
