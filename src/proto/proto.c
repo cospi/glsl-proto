@@ -343,11 +343,11 @@ static void proto_render_text(Proto *_this, float delta_time_sec)
 {
 	assert(_this != NULL);
 
-	if ((_this->flags & TEXT_RENDER_FLAGS) != TEXT_RENDER_FLAGS) {
+	uint16_t flags = _this->flags;
+	if ((flags & TEXT_RENDER_FLAGS) != TEXT_RENDER_FLAGS) {
 		return;
 	}
 
-	uint16_t flags = _this->flags;
 	char *text = _this->text;
 	if (sprintf(
 		text,
