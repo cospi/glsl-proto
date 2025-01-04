@@ -55,6 +55,7 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 	gl_clear_errors();
 	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(sprite_capacity * sizeof(Vertex2) * 4), NULL, GL_DYNAMIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
+		logger->log(logger, LOG_LEVEL_ERROR, "Initializing OpenGL vertex buffer data failed.");
 		goto error_fini_vertex_buffer;
 	}
 
@@ -64,6 +65,7 @@ bool gl_sprite_batch_init(GlSpriteBatch *_this, Logger *logger, Allocator *alloc
 	gl_clear_errors();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)indices_size, indices, GL_STATIC_DRAW);
 	if (glGetError() != GL_NO_ERROR) {
+		logger->log(logger, LOG_LEVEL_ERROR, "Initializing OpenGL index buffer data failed.");
 		goto error_fini_index_buffer;
 	}
 
