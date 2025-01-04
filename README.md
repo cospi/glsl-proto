@@ -17,4 +17,4 @@ GLSL Prototyper (glsl-proto) is a GLSL shader prototyping tool.
 
 MIT, see the LICENSE file.
 
-Copyright (c) 2024 Aleksanteri Hirvonen
+Copyright (c) 2024-2025 Aleksanteri Hirvonen
