@@ -18,6 +18,4 @@ struct FileSystem {
 	bool (*try_read_file)(FileSystem *_this, FileHandle handle, unsigned char *buffer, size_t size);
 };
 
-FileHandle file_system_open_file_relative(FileSystem *_this, Allocator *allocator, const char *path);
-
 #endif // FILE_SYSTEM_FILE_SYSTEM_H_

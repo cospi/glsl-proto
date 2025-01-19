@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include "../file_system/file.h"
+
 static const unsigned char UNCOMPRESSED_TGA_HEADER[] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static uint16_t parse_uint16_little_endian(const unsigned char *data)
@@ -26,7 +28,7 @@ bool image_init_from_tga_file(
 	assert(file_system != NULL);
 	assert(path != NULL);
 
-	FileHandle file;
+	File file;
 	size_t size;
 	unsigned char header[18];
 	unsigned char bytes_per_pixel;
@@ -35,28 +37,27 @@ bool image_init_from_tga_file(
 	unsigned char *pixels;
 	unsigned char *pixel;
 
-	file = file_system_open_file_relative(file_system, allocator, path);
-	if (file == NULL) {
+	if (!file_init_relative(&file, allocator, file_system, path)) {
 		return false;
 	}
 
-	if (!file_system->try_get_file_size(file_system, file, &size)) {
-		goto error_close_file;
+	if (!file_try_get_size(&file, &size)) {
+		goto error_fini_file;
 	}
 
-	if (!file_system->try_read_file(file_system, file, header, sizeof header)) {
-		goto error_close_file;
+	if (!file_try_read(&file, header, sizeof header)) {
+		goto error_fini_file;
 	}
 
 	if (memcmp(header, UNCOMPRESSED_TGA_HEADER, sizeof UNCOMPRESSED_TGA_HEADER) != 0) {
 		logger->log(logger, LOG_LEVEL_ERROR, "Unsupported TGA header.");
-		goto error_close_file;
+		goto error_fini_file;
 	}
 
 	bytes_per_pixel = header[16] >> 3;
 	if ((bytes_per_pixel != 3 /* BGR */) && (bytes_per_pixel != 4 /* BGRA */)) {
 		logger->log(logger, LOG_LEVEL_ERROR, "Unsupported TGA bytes per pixel.");
-		goto error_close_file;
+		goto error_fini_file;
 	}
 
 	width = parse_uint16_little_endian(header + 12);
@@ -64,7 +65,7 @@ bool image_init_from_tga_file(
 
 	pixels = allocator->allocate(allocator, (uint32_t)width * (uint32_t)height * 4);
 	if (pixels == NULL) {
-		goto error_close_file;
+		goto error_fini_file;
 	}
 
 	pixel = pixels;
@@ -73,9 +74,9 @@ bool image_init_from_tga_file(
 			unsigned char tmp;
 
 			pixel[3] = 0xFF;
-			if (!file_system->try_read_file(file_system, file, pixel, bytes_per_pixel)) {
+			if (!file_try_read(&file, pixel, bytes_per_pixel)) {
 				allocator->free(allocator, pixels);
-				goto error_close_file;
+				goto error_fini_file;
 			}
 
 			// \note Convert BGR(A) to RGB(A).
@@ -86,7 +87,7 @@ bool image_init_from_tga_file(
 		}
 	}
 
-	file_system->close_file(file_system, file);
+	file_fini(&file);
 
 	_this->allocator = allocator;
 	_this->width = width;
@@ -94,8 +95,8 @@ bool image_init_from_tga_file(
 	_this->pixels = pixels;
 	return true;
 
-error_close_file:
-	file_system->close_file(file_system, file);
+error_fini_file:
+	file_fini(&file);
 	return false;
 }
 

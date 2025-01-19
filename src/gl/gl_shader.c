@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include "../file_system/file.h"
+
 static char *get_shader_info_log(GLuint shader, Logger *logger, Allocator *allocator)
 {
 	assert(shader != 0);
@@ -53,35 +55,34 @@ static char *read_shader_source(Allocator *allocator, FileSystem *file_system, c
 	assert(file_system != NULL);
 	assert(path != NULL);
 
-	FileHandle file;
+	File file;
 	size_t size;
 	char *source;
 
-	file = file_system_open_file_relative(file_system, allocator, path);
-	if (file == NULL) {
+	if (!file_init_relative(&file, allocator, file_system, path)) {
 		return NULL;
 	}
 
-	if (!file_system->try_get_file_size(file_system, file, &size)) {
-		goto error_close_file;
+	if (!file_try_get_size(&file, &size)) {
+		goto error_fini_file;
 	}
 
 	source = allocator->allocate(allocator, size + 1);
 	if (source == NULL) {
-		goto error_close_file;
+		goto error_fini_file;
 	}
 
-	if (!file_system->try_read_file(file_system, file, (unsigned char *)source, size)) {
+	if (!file_try_read(&file, (unsigned char *)source, size)) {
 		allocator->free(allocator, source);
-		goto error_close_file;
+		goto error_fini_file;
 	}
 
 	source[size] = '\0';
-	file_system->close_file(file_system, file);
+	file_fini(&file);
 	return source;
 
-error_close_file:
-	file_system->close_file(file_system, file);
+error_fini_file:
+	file_fini(&file);
 	return NULL;
 }
 
