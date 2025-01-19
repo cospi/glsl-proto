@@ -14,18 +14,18 @@ void texture_font_init(
 	assert(characters_per_row > 0);
 	assert(characters_per_column > 0);
 
-	float inverse_characters_per_row_f = 1.0f / (float)characters_per_row;
-	float inverse_characters_per_column_f = 1.0f / (float)characters_per_column;
+	float characters_per_row_inverse_f = 1.0f / (float)characters_per_row;
+	float characters_per_column_inverse_f = 1.0f / (float)characters_per_column;
 
 	_this->texture = texture;
 	_this->characters_per_row = characters_per_row;
 	_this->character_size = (Vector2) {
-		(float)texture->width * inverse_characters_per_row_f,
-		(float)texture->height * inverse_characters_per_column_f
+		(float)texture->width * characters_per_row_inverse_f,
+		(float)texture->height * characters_per_column_inverse_f
 	};
 	_this->character_uv_size = (Vector2) {
-		inverse_characters_per_row_f,
-		inverse_characters_per_column_f
+		characters_per_row_inverse_f,
+		characters_per_column_inverse_f
 	};
 }
 
