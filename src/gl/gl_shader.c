@@ -13,7 +13,7 @@ static char *get_shader_info_log(GLuint shader, Logger *logger, Allocator *alloc
 	GLint length = 0;
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 	if (length <= 0) {
-		logger->log(logger, LOG_LEVEL_INFO, "Getting OpenGL shader info log length failed.");
+		logger->log(logger, LOG_LEVEL_ERROR, "Getting OpenGL shader info log length failed.");
 		return NULL;
 	}
 

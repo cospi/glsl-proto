@@ -11,7 +11,7 @@ static char *get_program_info_log(GLuint program, Logger *logger, Allocator *all
 	GLint length = 0;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
 	if (length <= 0) {
-		logger->log(logger, LOG_LEVEL_INFO, "Getting OpenGL program info log length failed.");
+		logger->log(logger, LOG_LEVEL_ERROR, "Getting OpenGL program info log length failed.");
 		return NULL;
 	}
 
