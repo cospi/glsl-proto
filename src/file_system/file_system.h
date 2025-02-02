@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "../memory/allocator.h"
-
 typedef void *FileHandle;
 
 typedef struct FileSystem FileSystem;
