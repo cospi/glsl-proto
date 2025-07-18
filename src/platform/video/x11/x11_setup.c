@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include "x11_gl_extensions.h"
+#include "x11_gl_vsync.h"
 
 bool x11_setup_init(X11Setup *_this, Logger *logger, unsigned int width, unsigned int height, const char *title)
 {
@@ -40,6 +41,8 @@ bool x11_setup_init(X11Setup *_this, Logger *logger, unsigned int width, unsigne
 	if (!x11_gl_init_extensions(logger)) {
 		goto error_fini_gl_context_current;
 	}
+
+	x11_gl_set_vsync(window, false);
 
 	return true;
 
