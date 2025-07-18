@@ -66,6 +66,8 @@ static HGLRC create_dummy_context(HDC device_context)
 
 bool win32_gl_init_context_creation_extensions(Logger *logger, HINSTANCE instance)
 {
+	assert(logger != NULL);
+
 	bool exit_status = false;
 	Win32GlWindow dummy_window;
 	HGLRC dummy_context;
