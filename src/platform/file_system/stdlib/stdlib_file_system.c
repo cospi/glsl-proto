@@ -39,7 +39,7 @@ static void stdlib_file_system_close_file(FileSystem *_this, FileHandle handle)
 
 	// \note Prevent -Wuse-after-free=3 from firing.
 	uintptr_t handle_value = (uintptr_t)handle;
-	fclose((FILE *)handle);
+	fclose(handle);
 	Logger *logger = ((const StdlibFileSystem *)_this)->logger;
 	logger->log(logger, LOG_LEVEL_INFO, "Closed file (%" PRIxPTR ").", handle_value);
 }
@@ -52,7 +52,7 @@ static bool stdlib_file_system_try_get_file_size(FileSystem *_this, FileHandle h
 
 	Logger *logger = ((const StdlibFileSystem *)_this)->logger;
 
-	FILE *file = (FILE *)handle;
+	FILE *file = handle;
 	long original_position = ftell(file);
 	if (original_position < 0L) {
 		logger->log(logger, LOG_LEVEL_ERROR, "Getting file position failed.");
@@ -85,7 +85,7 @@ static bool stdlib_file_system_try_read_file(FileSystem *_this, FileHandle handl
 	assert(buffer != NULL);
 	assert(size > 0);
 
-	if (fread(buffer, size, 1, (FILE *)handle) != 1) {
+	if (fread(buffer, size, 1, handle) != 1) {
 		Logger *logger = ((const StdlibFileSystem *)_this)->logger;
 		logger->log(logger, LOG_LEVEL_ERROR, "Reading %zu bytes from file failed.", size);
 		return false;
